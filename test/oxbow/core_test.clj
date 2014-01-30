@@ -2,8 +2,7 @@
   (:use midje.sweet)
   (:require [oxbow.core :as core]))
 
-(defn- check-test-project []
-  (core/check "test-resources/test-project"))
+(def check-test-project (memoize (fn [] (core/check "test-resources/test-project"))))
 
 (fact "Namespaces that are not referenced from anywhere are reported as dead"
   (check-test-project) => (contains {:type :dead-ns :name 'test-project.deps.b}))
