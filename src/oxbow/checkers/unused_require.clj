@@ -6,7 +6,7 @@
 (defn- parse-namespaces-from-symbols [forms]
   (->> forms
        (mapcat (partial tree-seq sequential? identity))
-       (remove sequential?)
+       (filter symbol?)
        (keep namespace)
        (set)))
 
