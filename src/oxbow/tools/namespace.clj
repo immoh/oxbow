@@ -12,13 +12,9 @@
         #(not= % :eof)
         (repeatedly #(read-next rdr :eof-error? false :eof-value :eof))))))
 
-(defn- is-ns-decl? [form]
+(defn- is-decl-of-type? [type form]
   (and (sequential? form)
-       (= 'ns (first form))))
-
-(defn is-require-decl? [form]
-  (and (sequential? form)
-       (= :require (first form))))
+       (= type (first form))))
 
 (defn- parse-ns [ns-decl]
   (second ns-decl))
@@ -36,14 +32,15 @@
 (defn- create-spec-map [spec]
   {:spec spec :ns (extract-ns spec) :alias (extract-alias spec)})
 
-(defn- parse-requires [ns-decl]
+(defn- parse-deps-of-type [type ns-decl]
   (->> ns-decl
-       (filter is-require-decl?)
+       (filter (partial is-decl-of-type? type))
        (mapcat rest)
        (map create-spec-map)))
 
 (defn analyze [file]
-  (let [[ns-form & forms] (drop-while (complement is-ns-decl?) (read-forms file))]
+  (let [[ns-form & forms] (drop-while (complement (partial is-decl-of-type? 'ns)) (read-forms file))]
     {:ns       (parse-ns ns-form)
-     :requires (parse-requires ns-form)
+     :uses     (parse-deps-of-type :use ns-form)
+     :requires (parse-deps-of-type :require ns-form)
      :forms    forms}))
