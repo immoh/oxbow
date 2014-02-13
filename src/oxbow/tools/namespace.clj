@@ -23,13 +23,18 @@
 (defn- parse-ns [ns-decl]
   (second ns-decl))
 
+(defn- extract-ns [spec]
+  (if (sequential? spec)
+    (first spec)
+    spec))
+
 (defn- extract-alias [spec]
   (if (sequential? spec)
     (second (drop-while #(not= % :as) spec))
     spec))
 
 (defn- create-spec-map [spec]
-  {:spec spec :alias (extract-alias spec)})
+  {:spec spec :ns (extract-ns spec) :alias (extract-alias spec)})
 
 (defn- parse-requires [ns-decl]
   (->> ns-decl
