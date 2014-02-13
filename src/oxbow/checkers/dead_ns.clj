@@ -1,15 +1,18 @@
 (ns oxbow.checkers.dead-ns
   (:require [clojure.java.io :as io]
             [clojure.tools.namespace.find :as ns-find]
-            [clojure.tools.namespace.parse :as ns-parse]))
+            [oxbow.tools.namespace :as ns-tool]))
 
 (defn- parse-ns-from-ns-decl [decl]
   (second decl))
 
-(defn- create-deps-map-from-ns-decls [decls]
+(defn- deps-from-ns-spec [{:keys [uses requires]}]
+  (map :ns (concat uses requires)))
+
+(defn- create-deps-map [ns-specs]
   (zipmap
-    (map parse-ns-from-ns-decl decls)
-    (map ns-parse/deps-from-ns-decl decls)))
+    (map :ns ns-specs)
+    (map deps-from-ns-spec ns-specs)))
 
 (defn- find-dead-namespaces [namespaces-to-deps]
   (clojure.set/difference
@@ -21,7 +24,8 @@
 
 (defn check [path]
   (->> (io/file path)
-       (ns-find/find-ns-decls-in-dir)
-       (create-deps-map-from-ns-decls)
+       (ns-find/find-clojure-sources-in-dir)
+       (map ns-tool/analyze)
+       (create-deps-map)
        (find-dead-namespaces)
        (map format-result)))
