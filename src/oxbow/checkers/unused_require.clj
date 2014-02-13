@@ -1,7 +1,5 @@
 (ns oxbow.checkers.unused-require
-  (:require [clojure.java.io :as io]
-            [clojure.tools.namespace.find :as ns-find]
-            [oxbow.tools.namespace :as oxbow-ns]))
+  (:require [oxbow.tools.namespace :as ns-tool]))
 
 (defn- parse-namespaces-from-symbols [forms]
   (->> forms
@@ -20,7 +18,5 @@
              seq
              (map (partial format-result ns)))))
 
-(defn check [path]
-  (mapcat
-    (comp find-unused-requires oxbow-ns/analyze)
-    (ns-find/find-clojure-sources-in-dir (io/file path))))
+(defn check [files]
+  (mapcat (comp find-unused-requires ns-tool/analyze) files))
