@@ -1,5 +1,4 @@
-(ns oxbow.checkers.unused-require
-  (:require [oxbow.tools.namespace :as ns-tool]))
+(ns oxbow.checkers.unused-require)
 
 (defn- parse-namespaces-from-symbols [forms]
   (->> forms
@@ -18,5 +17,5 @@
              seq
              (map (partial format-result ns)))))
 
-(defn check [files]
-  (mapcat (comp find-unused-requires ns-tool/analyze) files))
+(defn check [ns-infos]
+  (mapcat find-unused-requires ns-infos))

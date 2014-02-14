@@ -1,5 +1,6 @@
 (ns oxbow.core
   (:require [clojure.java.io :as io]
+            [oxbow.tools.namespace :as ns-tool]
             [oxbow.checkers.dead-ns :as dead-ns]
             [oxbow.checkers.unused-require :as unused-require]))
 
@@ -18,4 +19,5 @@
        (sort-by (memfn getAbsolutePath))))
 
 (defn check [path]
-  (mapcat #(% (find-clojure-files-recursively path)) checkers))
+  (let [ns-infos (map ns-tool/analyze (find-clojure-files-recursively path))]
+    (mapcat #(% ns-infos) checkers)))

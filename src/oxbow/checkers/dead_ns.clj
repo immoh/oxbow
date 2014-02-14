@@ -1,5 +1,4 @@
-(ns oxbow.checkers.dead-ns
-  (:require [oxbow.tools.namespace :as ns-tool]))
+(ns oxbow.checkers.dead-ns)
 
 (defn- parse-ns-from-ns-decl [decl]
   (second decl))
@@ -20,9 +19,8 @@
 (defn- format-result [ns]
   {:type :dead-ns :name ns})
 
-(defn check [files]
-  (->> files
-       (map ns-tool/analyze)
+(defn check [ns-infos]
+  (->> ns-infos
        (create-deps-map)
        (find-dead-namespaces)
        (map format-result)))
