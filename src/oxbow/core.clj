@@ -1,23 +1,11 @@
 (ns oxbow.core
-  (:require [clojure.java.io :as io]
-            [oxbow.tools.namespace :as ns-tool]
-            [oxbow.checkers.dead-ns :as dead-ns]
-            [oxbow.checkers.unused-require :as unused-require]))
+  (:require [oxbow.checkers.dead-ns :as dead-ns]
+            [oxbow.checkers.unused-require :as unused-require]
+            [oxbow.namespace.file :as ns-file]))
 
 (def checkers [dead-ns/check
                unused-require/check])
 
-(defn- clojure-file? [file]
-  (and
-    (.isFile file)
-    (re-matches #".+.clj.?" (.getName file))))
-
-(defn- find-clojure-files-recursively [path]
-  (->> (io/file path)
-       (file-seq)
-       (filter clojure-file?)
-       (sort-by (memfn getAbsolutePath))))
-
 (defn check [path]
-  (let [ns-infos (map ns-tool/analyze (find-clojure-files-recursively path))]
+  (let [ns-infos (map ns-file/analyze (ns-file/find-recursively path))]
     (mapcat #(% ns-infos) checkers)))
