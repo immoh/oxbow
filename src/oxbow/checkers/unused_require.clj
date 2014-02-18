@@ -7,13 +7,16 @@
        (keep namespace)
        (set)))
 
+(defn is-require-used? [used-namespaces {:keys [ns as]}]
+  (used-namespaces (str (or as ns))))
+
 (defn format-result [ns {:keys [spec]}]
   {:type :unused-require :ns ns :spec spec})
 
 (defn- find-unused-requires [{:keys [ns requires forms]}]
   (let [used-namespaces (parse-namespaces-from-symbols forms)]
     (some->> requires
-             (remove (comp used-namespaces str :alias))
+             (remove (partial is-require-used? used-namespaces))
              seq
              (map (partial format-result ns)))))
 

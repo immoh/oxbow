@@ -19,3 +19,6 @@
 
 (fact "Unused require is reported"
   (check-test-project) => (contains {:type :unused-require :ns 'test-project.core :spec '[test-project.deps.d :as d]}))
+
+(fact "Used require is not reported"
+  (check-test-project) =not=> (contains {:type :unused-require :ns 'test-project.core :spec '[test-project.deps.a :as a]}))

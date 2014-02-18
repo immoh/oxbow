@@ -7,18 +7,12 @@
 (defn- parse-ns [ns-decl]
   (second ns-decl))
 
-(defn- extract-ns [spec]
-  (if (sequential? spec)
-    (first spec)
-    spec))
-
-(defn- extract-alias [spec]
-  (if (sequential? spec)
-    (second (drop-while #(not= % :as) spec))
-    spec))
+(defn- sequentify [v]
+  (if (sequential? v) v [v]))
 
 (defn- create-spec-map [spec]
-  {:spec spec :ns (extract-ns spec) :alias (extract-alias spec)})
+  (let [[ns & {:as opts}] (sequentify spec)]
+    (merge {:ns ns :spec spec} opts)))
 
 (defn- parse-deps-of-type [type ns-decl]
   (->> ns-decl
