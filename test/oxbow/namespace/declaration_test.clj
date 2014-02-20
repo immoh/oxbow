@@ -26,3 +26,12 @@
   (ns-decl/analyze '(ns my.core
                       (:require [my.deps.first])))
   => (contains {:requires [{:ns 'my.deps.first :spec '[my.deps.first]}]}))
+
+(fact "Prefixed libspecs are analyzed correctly"
+  (ns-decl/analyze '(ns my.core
+                      (:require [my.deps [first :as first]
+                                         [second :as second]])))
+  => (contains {:requires [{:ns 'my.deps.first  :as 'first :spec '[my.deps [first :as first]
+                                                                           [second :as second]]}
+                           {:ns 'my.deps.second :as 'second :spec '[my.deps [first :as first]
+                                                                            [second :as second]]}]}))
