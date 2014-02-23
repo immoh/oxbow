@@ -3,15 +3,22 @@
             [oxbow.namespace.declaration :as ns-decl])
   (:import [java.io PushbackReader]))
 
-(defn- read-next [rdr & {:keys [eof-error? eof-value]}]
+(defn- read* [rdr & {:keys [eof-error? eof-value]}]
   (read rdr eof-error? eof-value))
+
+(defn- read-next [file rdr]
+  (try
+    (read* rdr :eof-error? false :eof-value :eof)
+    (catch RuntimeException e
+      (println (format "Error while reading %s: %s" (.getAbsolutePath file) (.getMessage e)))
+      :error)))
 
 (defn- read-forms [file]
   (with-open [rdr (PushbackReader. (io/reader file))]
     (doall
       (take-while
-        #(not= % :eof)
-        (repeatedly #(read-next rdr :eof-error? false :eof-value :eof))))))
+        (complement #{:eof :error})
+        (repeatedly #(read-next file rdr))))))
 
 (defn analyze [file]
   (let [[ns-form & forms] (drop-while (complement ns-decl/is-ns-decl?) (read-forms file))]
