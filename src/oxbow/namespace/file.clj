@@ -14,7 +14,7 @@
         (repeatedly #(read-next rdr :eof-error? false :eof-value :eof))))))
 
 (defn analyze [file]
-  (let [[ns-form & forms] (drop-while (complement (partial ns-decl/is-ns-decl?)) (read-forms file))]
+  (let [[ns-form & forms] (drop-while (complement ns-decl/is-ns-decl?) (read-forms file))]
     (merge
       (ns-decl/analyze ns-form)
       {:forms forms})))
