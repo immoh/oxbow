@@ -6,25 +6,30 @@
 (defn- read* [rdr & {:keys [eof-error? eof-value]}]
   (read rdr eof-error? eof-value))
 
-(defn- read-next [file rdr]
-  (try
-    (read* rdr :eof-error? false :eof-value :eof)
-    (catch RuntimeException e
-      (println (format "Error while reading %s: %s" (.getAbsolutePath file) (.getMessage e)))
-      :error)))
+(defn- read-next [rdr]
+  (read* rdr :eof-error? false :eof-value :eof))
 
-(defn- read-forms [file]
-  (with-open [rdr (PushbackReader. (io/reader file))]
-    (doall
-      (take-while
-        (complement #{:eof :error})
-        (repeatedly #(read-next file rdr))))))
+(defn- read-forms [rdr]
+  (doall
+    (take-while
+      #(not= :eof %)
+      (repeatedly #(read-next rdr)))))
+
+(defn- read-ns-form [rdr]
+  (let [form (read-next rdr)]
+    (cond
+      (= :eof form)  nil
+      (ns-decl/is-ns-decl? form)  form
+      :else  (recur rdr))))
 
 (defn analyze [file]
-  (let [[ns-form & forms] (drop-while (complement ns-decl/is-ns-decl?) (read-forms file))]
-    (merge
-      (ns-decl/analyze ns-form)
-      {:forms forms})))
+  (binding [*ns* *ns*]
+    (with-open [rdr (PushbackReader. (io/reader file))]
+      (let [ns-form (read-ns-form rdr)]
+        (eval ns-form)
+        (merge
+          {:forms (read-forms file rdr)}
+          (ns-decl/analyze ns-form))))))
 
 (defn- clojure-file? [file]
   (and
