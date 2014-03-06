@@ -32,10 +32,21 @@
                                                      :spec (contains 'test-project.deps.a)}))))
 
 
-(facts "About :unused-require-refer-symbols checker"
+(facts "About :unused-require-refer checker"
 
   (fact "Unused referred symbols from require are reported"
     (check-test-project) => (contains {:type    :unused-require-refer-symbols
                                        :ns      'test-project.core
                                        :spec    '[test-project.deps.e :refer [my-function other-function]]
-                                       :symbols '(my-function)})))
+                                       :symbols '(my-function)}))
+
+
+  (fact "Require :refer :all with no used symbols is reported as unused"
+        (check-test-project) => (contains {:type :unused-require-refer-all
+                                           :ns   'test-project.core
+                                           :spec '[test-project.deps.f :refer :all]}))
+
+  (fact "Require :refer :all with at least one used symbol is not reported as unused"
+        (check-test-project) =not=> (contains {:type :unused-require-refer-all
+                                               :ns   'test-project.core
+                                               :spec '[test-project.deps.g :refer :all]})))
