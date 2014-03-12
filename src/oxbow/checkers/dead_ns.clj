@@ -1,4 +1,5 @@
-(ns oxbow.checkers.dead-ns)
+(ns oxbow.checkers.dead-ns
+  (:require clojure.set))
 
 (defn- parse-ns-from-ns-decl [decl]
   (second decl))
