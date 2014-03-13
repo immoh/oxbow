@@ -2,10 +2,10 @@
   (:require [riddley.walk :as walk]
             [riddley.compiler :as compiler]))
 
-(defn- get-ns-symbol [sym]
+(defn- resolve-ns-name [sym]
   (let [resolved (resolve sym)]
     (when (instance? clojure.lang.Var resolved)
-      (some-> resolved .-ns .getName))))
+      (some-> resolved .-ns ns-name))))
 
 (defn- local? [sym]
   ((compiler/locals) sym))
@@ -15,7 +15,7 @@
     (walk/walk-exprs symbol?
                      (fn [sym]
                        (when-not (or (local? sym) (namespace sym))
-                         (swap! resolved-symbols assoc sym (get-ns-symbol sym))))
+                         (swap! resolved-symbols assoc sym (resolve-ns-name sym))))
                      form)
     @resolved-symbols))
 
