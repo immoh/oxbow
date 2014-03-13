@@ -10,11 +10,14 @@
 (defn- local? [sym]
   ((compiler/locals) sym))
 
+(defn- qualified? [sym]
+  (re-find #"[\./]" (str sym)))
+
 (defn- get-resolved-symbols [form]
   (let [resolved-symbols (atom {})]
     (walk/walk-exprs symbol?
                      (fn [sym]
-                       (when-not (or (local? sym) (namespace sym))
+                       (when-not (or (local? sym) (qualified? sym))
                          (when-let [sym-ns-name (resolve-ns-name sym)]
                            (swap! resolved-symbols assoc sym sym-ns-name))))
                      form)
