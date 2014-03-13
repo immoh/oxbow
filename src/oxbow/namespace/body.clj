@@ -15,7 +15,8 @@
     (walk/walk-exprs symbol?
                      (fn [sym]
                        (when-not (or (local? sym) (namespace sym))
-                         (swap! resolved-symbols assoc sym (resolve-ns-name sym))))
+                         (when-let [sym-ns-name (resolve-ns-name sym)]
+                           (swap! resolved-symbols assoc sym sym-ns-name))))
                      form)
     @resolved-symbols))
 
