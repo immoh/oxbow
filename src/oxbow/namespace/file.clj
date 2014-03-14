@@ -29,6 +29,7 @@
       (let [ns-form (read-ns-form rdr)]
         (eval ns-form)
         (let [forms (read-forms rdr)]
+          (dorun (map eval forms))
           (merge
             {:ns-form ns-form
              :forms   forms}
