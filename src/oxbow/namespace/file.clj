@@ -24,6 +24,7 @@
       :else  (recur rdr))))
 
 (defn analyze [file]
+  (println "Analyzing" (.getPath file))
   (binding [*ns* *ns*]
     (with-open [rdr (PushbackReader. (io/reader file))]
       (let [ns-form (read-ns-form rdr)]
