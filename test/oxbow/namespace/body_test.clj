@@ -16,3 +16,6 @@
   (binding [*ns* *ns*]
     (ns test (:require [clojure.set :refer [difference]]))
     (ns-body/analyze ['(let [difference 1] (inc difference))]) => {:resolved-symbols {}}))
+
+(fact "Doesn't choke on unqualified Java class names"
+  (ns-body/analyze ['(handle-class System)]) => {:resolved-symbols {}})

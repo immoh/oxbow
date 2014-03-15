@@ -3,9 +3,9 @@
             [riddley.compiler :as compiler]))
 
 (defn- get-ns-symbol [sym]
-  (-> (resolve sym)
-      .-ns
-      .getName))
+  (let [resolved (resolve sym)]
+    (when (instance? clojure.lang.Var resolved)
+      (some-> resolved .-ns .getName))))
 
 (defn- local? [sym]
   ((compiler/locals) sym))
