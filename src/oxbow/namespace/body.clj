@@ -19,15 +19,16 @@
       (swap! res-atom assoc sym sym-ns-name))))  
 
 (defn- get-resolved-symbols [form]
-  (let [resolved-symbols (atom {})]
-    (walk/walk-exprs symbol?
-                     (fn [sym] (resolve-and-store resolved-symbols sym) sym)
-                     (fn [first-of-form]
-                       (when (symbol? first-of-form)
-                         (resolve-and-store resolved-symbols first-of-form))
-                       false)
-                     form)
-    @resolved-symbols))
+  (when-not (= 'defmacro (first form))
+    (let [resolved-symbols (atom {})]
+      (walk/walk-exprs symbol?
+                       (fn [sym] (resolve-and-store resolved-symbols sym) sym)
+                       (fn [first-of-form]
+                         (when (symbol? first-of-form)
+                           (resolve-and-store resolved-symbols first-of-form))
+                         false)
+                       form)
+      @resolved-symbols)))
 
 (defn analyze [forms]
   {:resolved-symbols (apply merge (map get-resolved-symbols forms))})
