@@ -2,23 +2,16 @@
   (:require [riddley.walk :as walk]
             [riddley.compiler :as compiler]))
 
-(defn- resolve-ns-name [sym]
-  (let [resolved (resolve sym)]
-    (when (instance? clojure.lang.Var resolved)
-      (some-> resolved .-ns ns-name))))
-
 (defn- local? [sym]
   ((compiler/locals) sym))
 
-(defn- qualified? [sym]
-  (re-find #"[\./]" (str sym)))
-
 (defn- resolve-and-store [res-atom sym]
-  (when-not (or (local? sym) (qualified? sym))
-    (when-let [sym-ns-name (resolve-ns-name sym)]
-      (swap! res-atom assoc sym sym-ns-name))))  
+  (when-not (local? sym)
+    (let [resolved (resolve sym)]
+      (when (var? resolved)
+        (swap! res-atom assoc sym resolved)))))  
 
-(defn- get-resolved-symbols [form]
+(defn- symbols-to-vars [form]
   (when-not (= 'defmacro (first form))
     (let [resolved-symbols (atom {})]
       (walk/walk-exprs symbol?
@@ -31,4 +24,4 @@
       @resolved-symbols)))
 
 (defn analyze [forms]
-  {:resolved-symbols (apply merge (map get-resolved-symbols forms))})
+  {:symbols-to-vars (apply merge (map symbols-to-vars forms))})
