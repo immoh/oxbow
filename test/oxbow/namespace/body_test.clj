@@ -16,5 +16,8 @@
 (fact "Doesn't choke on unqualified Java class names"
   (ns-body/analyze ['(handle-class System)]) => {:symbols-to-vars {}})
 
+(fact "Doesn't choke on ns names"
+  (ns-body/analyze ['(handle-ns clojure.core.async)]) => {:symbols-to-vars {}})
+
 (fact "Handles macro calls with special forms"
       (ns-body/analyze ['(form->string (catch [:foo] {} nil))]) => {:symbols-to-vars {'form->string #'oxbow.namespace.test-macros/form->string}})
