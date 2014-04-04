@@ -20,8 +20,8 @@
 (defn- format-result [ns]
   {:type :dead-ns :name ns})
 
-(defn check [ns-infos]
-  (->> ns-infos
+(defn check [analyzed-nses]
+  (->> analyzed-nses
        (create-deps-map)
        (find-dead-namespaces)
        (map format-result)))

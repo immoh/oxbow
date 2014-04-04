@@ -38,5 +38,5 @@
 (defn- check-ns [{:keys [ns symbols-to-vars requires]}]
   (keep (partial check-ns-require ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars)) requires))
 
-(defn check [ns-infos]
-  (mapcat check-ns ns-infos))
+(defn check [analyzed-nses]
+  (mapcat check-ns analyzed-nses))

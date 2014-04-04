@@ -6,5 +6,5 @@
                oxbow.checkers.unused-require/check])
 
 (defn check [path]
-  (let [ns-infos (map ns-file/analyze (ns-file/find-recursively path))]
-    (mapcat #(% ns-infos) checkers)))
+  (let [analyzed-nses (map ns-file/analyze (ns-file/find-recursively path))]
+    (mapcat #(% analyzed-nses) checkers)))
