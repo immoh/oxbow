@@ -4,7 +4,7 @@
 
 (def check-test-project (memoize (fn [] (core/check "test-resources/test_project"))))
 
-(facts "About :dead-ns checker"
+(facts "About dead-ns checker"
 
   (fact "Namespaces that are not referenced from anywhere are reported as dead"
     (check-test-project) => (contains {:type :dead-ns
@@ -19,7 +19,7 @@
                                            :name 'test-project.deps.c})))
 
 
-(facts "About :unused-ns checker"
+(facts "About unused-require checker"
 
   (fact "Unused require is reported"
     (check-test-project) => (contains {:type :unused-require
@@ -29,10 +29,7 @@
   (fact "Used require is not reported"
     (check-test-project) =not=> (contains (contains {:type :unused-require
                                                      :ns   'test-project.core
-                                                     :spec (contains 'test-project.deps.a)}))))
-
-
-(facts "About :unused-require-refer checker"
+                                                     :spec (contains 'test-project.deps.a)})))
 
   (fact "Unused referred symbols from require are reported"
     (check-test-project) => (contains {:type    :unused-require-refer-symbols
@@ -42,11 +39,11 @@
 
 
   (fact "Require :refer :all with no used symbols is reported as unused"
-        (check-test-project) => (contains {:type :unused-require-refer-all
-                                           :ns   'test-project.core
-                                           :spec '[test-project.deps.f :refer :all]}))
+    (check-test-project) => (contains {:type :unused-require-refer-all
+                                       :ns   'test-project.core
+                                       :spec '[test-project.deps.f :refer :all]}))
 
   (fact "Require :refer :all with at least one used symbol is not reported as unused"
-        (check-test-project) =not=> (contains {:type :unused-require-refer-all
-                                               :ns   'test-project.core
-                                               :spec '[test-project.deps.g :refer :all]})))
+    (check-test-project) =not=> (contains {:type :unused-require-refer-all
+                                           :ns   'test-project.core
+                                           :spec '[test-project.deps.g :refer :all]})))
