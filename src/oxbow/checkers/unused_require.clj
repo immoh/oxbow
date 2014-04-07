@@ -31,8 +31,8 @@
 
 (defn- check-ns-require [ns used-symbols used-nses require]
   (when-let [result (or
-                      (find-unused-refer require used-symbols)
-                      (find-unused-require require used-nses))]
+                     (find-unused-require require used-nses)
+                     (find-unused-refer require used-symbols))]
     (assoc result :ns ns :spec (:spec require))))
 
 (defn- check-ns [{:keys [ns symbols-to-vars requires]}]
