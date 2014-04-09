@@ -49,4 +49,9 @@
   (fact "Require :refer :all with at least one used symbol is not reported as unused"
     (check-test-project) =not=> (contains {:type :unused-require-refer-all
                                            :ns   'test-project.core
-                                           :spec '[test-project.deps.g :refer :all]})))
+                                           :spec '[test-project.deps.g :refer :all]}))
+
+  (fact "Unused :use is reported"
+    (check-test-project) => (contains {:type :unused-use
+                                       :ns   'test-project.core
+                                       :spec '[test-project.deps.c :only [main]]})))

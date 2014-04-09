@@ -5,7 +5,7 @@
             [test-project.deps.f :as f :refer :all]
             [test-project.deps.g :refer :all]
             [test-project.deps.h :refer :all])
-  (:use [test-project.deps.c]))
+  (:use [test-project.deps.c :only [main]]))
 
 (defn foo []
   (a/foo)
