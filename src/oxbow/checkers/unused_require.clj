@@ -35,8 +35,10 @@
                      (find-unused-refer require used-symbols))]
     (assoc result :ns ns :spec (:spec require))))
 
-(defn- check-ns [{:keys [ns symbols-to-vars requires]}]
-  (keep (partial check-ns-require ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars)) requires))
+(defn- check-ns [{:keys [ns symbols-to-vars deps]}]
+  (->> deps
+       (filter #(= :require (:type %)))
+       (keep (partial check-ns-require ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars)))))
 
 (defn check [analyzed-nses]
   (mapcat check-ns analyzed-nses))

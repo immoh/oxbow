@@ -1,11 +1,8 @@
 (ns oxbow.checkers.dead-ns
   (:require clojure.set))
 
-(defn- parse-ns-from-ns-decl [decl]
-  (second decl))
-
-(defn- deps-from-ns-spec [{:keys [uses requires]}]
-  (map :ns (concat uses requires)))
+(defn- deps-from-ns-spec [{:keys [deps]}]
+  (map :ns deps))
 
 (defn- create-deps-map [ns-specs]
   (zipmap

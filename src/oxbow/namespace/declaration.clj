@@ -19,26 +19,28 @@
 (defn- sequentify [v]
   (if (sequential? v) v [v]))
 
-(defn- create-spec-map [spec & {:keys [ns-transformer original-spec] :or {ns-transformer identity original-spec spec}}]
+(defn- create-spec-map [type spec & {:keys [ns-transformer original-spec] :or {ns-transformer identity original-spec spec}}]
   (let [[ns & {:as opts}] (sequentify spec)]
-    (merge {:ns (ns-transformer ns) :spec original-spec} opts)))
+    (merge {:type type :ns (ns-transformer ns) :spec original-spec} opts)))
 
-(defn- analyze-libspec [spec]
+(defn- analyze-libspec [[type spec]]
   (if (is-prefix-spec? spec)
     (let [[prefix & suffix-specs] spec]
-      (map #(create-spec-map % :ns-transformer (partial concat-to-ns-symbol prefix) :original-spec spec) suffix-specs))
-    [(create-spec-map spec)]))
+      (map #(create-spec-map type % :ns-transformer (partial concat-to-ns-symbol prefix) :original-spec spec) suffix-specs))
+    [(create-spec-map type spec)]))
 
-(defn- parse-deps-of-type [type ns-decl]
+(defn- expand-libspec [[ type & specs]]
+  (map (partial list type) specs))
+
+(defn- parse-deps [ns-decl]
   (->> ns-decl
-       (filter (partial is-decl-of-type? type))
-       (mapcat rest)
+       (filter #(or (is-decl-of-type? :require %) (is-decl-of-type? :use %)))
+       (mapcat expand-libspec)
        (mapcat analyze-libspec)))
 
 (defn is-ns-decl? [form]
   (is-decl-of-type? 'ns form))
 
 (defn analyze [ns-decl]
-  {:ns       (parse-ns ns-decl)
-   :uses     (parse-deps-of-type :use ns-decl)
-   :requires (parse-deps-of-type :require ns-decl)})
+  {:ns   (parse-ns ns-decl)
+   :deps (parse-deps ns-decl)})
