@@ -54,4 +54,9 @@
   (fact "Unused :use is reported"
     (check-test-project) => (contains {:type :unused-use
                                        :ns   'test-project.core
-                                       :spec '[test-project.deps.c :only [main]]})))
+                                       :spec '[test-project.deps.c :only [main]]}))
+
+  (fact "Used :use is not reported"
+    (check-test-project) =not=> (contains {:type :unused-use
+                                           :ns   'test-project.core
+                                           :spec '[test-project.deps.i]})))
