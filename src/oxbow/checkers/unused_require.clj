@@ -17,6 +17,10 @@
   (when-not (contains? used-nses required-ns)
     {:type :unused-require}))
 
+(defn- find-unused-use [{used-ns :ns} used-nses]
+  (when-not (contains? used-nses used-ns)
+    {:type :unused-use}))
+
 (defn- var->ns-name [v]
   (-> v .-ns ns-name))
 
@@ -29,16 +33,20 @@
 (defn- used-nses [symbols-to-vars]
   (set (keep var->ns-name (vals symbols-to-vars))))
 
-(defn- check-ns-require [ns used-symbols used-nses require]
+(defmulti check-ns-dep (fn [ns used-symbols used-nses dep] (:type dep)))
+
+(defmethod check-ns-dep :require [ns used-symbols used-nses require]
   (when-let [result (or
                      (find-unused-require require used-nses)
                      (find-unused-refer require used-symbols))]
     (assoc result :ns ns :spec (:spec require))))
 
+(defmethod check-ns-dep :use [ns used-symbols used-nses use]
+  (when-let [result (find-unused-use use used-nses)]
+    (assoc result :ns ns :spec (:spec use))))
+
 (defn- check-ns [{:keys [ns symbols-to-vars deps]}]
-  (->> deps
-       (filter #(= :require (:type %)))
-       (keep (partial check-ns-require ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars)))))
+  (keep (partial check-ns-dep ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars)) deps))
 
 (defn check [analyzed-nses]
   (mapcat check-ns analyzed-nses))
