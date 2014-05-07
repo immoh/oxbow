@@ -59,4 +59,10 @@
   (fact "Used :use is not reported"
     (check-test-project) =not=> (contains {:type :unused-use
                                            :ns   'test-project.core
-                                           :spec '[test-project.deps.i]})))
+                                           :spec '[test-project.deps.i]}))
+
+  (fact "Unused :use :only symbols are reported"
+    (check-test-project) => (contains {:type     :unused-use-only-symbols
+                                       :ns      'test-project.core
+                                       :spec    '[test-project.deps.j :only [configuration j-function]]
+                                       :symbols '(configuration)})))
