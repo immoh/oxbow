@@ -7,7 +7,8 @@
             [test-project.deps.h :refer :all])
   (:use [test-project.deps.c :only [main]]
         [test-project.deps.i]
-        [test-project.deps.j :only [configuration j-function]]))
+        [test-project.deps.j :only [configuration j-function]]
+        [test-project.deps.k :rename {main k-main}]))
 
 (defn foo []
   (a/foo)
@@ -15,4 +16,5 @@
   (f/f-function)
   (g-function)
   (i-function)
-  (j-function))
+  (j-function)
+  (k-main))

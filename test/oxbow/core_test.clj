@@ -65,4 +65,9 @@
     (check-test-project) => (contains {:type     :unused-use-only-symbols
                                        :ns      'test-project.core
                                        :spec    '[test-project.deps.j :only [configuration j-function]]
-                                       :symbols '(configuration)})))
+                                       :symbols '(configuration)}))
+
+  (fact "Used :use symbol wth :rename is not reported"
+    (check-test-project) =not=> (contains (contains {:type :unused-use-only-symbols
+                                                     :ns   'test-project.core
+                                                     :spec  (contains 'test-project.deps.k)}))))
