@@ -1,4 +1,4 @@
-(ns oxbow.checkers.unused-require
+(ns oxbow.checkers.ns-dependency
   (:require clojure.set))
 
 (defmulti find-unused-refer (fn [{:keys [refer]} used-symbols] refer))
