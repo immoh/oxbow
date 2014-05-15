@@ -18,13 +18,9 @@
     (when-let [unused (clojure.set/difference (set only) (get used-symbols used-ns))]
       {:type :unused-use-only-symbols :symbols (seq unused)})))
 
-(defn- find-unused-require [{required-ns :ns} used-nses]
-  (when-not (contains? used-nses required-ns)
-    {:type :unused-require}))
-
-(defn- find-unused-use [{used-ns :ns} used-nses]
-  (when-not (contains? used-nses used-ns)
-    {:type :unused-use}))
+(defn- find-unused-dep [{dep-ns :ns} used-nses]
+  (when-not (contains? used-nses dep-ns)
+    {:type :unused-ns-dependency}))
 
 (defn- var->ns-name [v]
   (-> v .-ns ns-name))
@@ -42,13 +38,13 @@
 
 (defmethod check-ns-dep :require [ns used-symbols used-nses require]
   (when-let [result (or
-                     (find-unused-require require used-nses)
+                     (find-unused-dep require used-nses)
                      (find-unused-refer require used-symbols))]
     (assoc result :ns ns :spec (:spec require))))
 
 (defmethod check-ns-dep :use [ns used-symbols used-nses use]
   (when-let [result (or
-                      (find-unused-use use used-nses)
+                      (find-unused-dep use used-nses)
                       (find-unused-use-only use used-symbols))]
     (assoc result :ns ns :spec (:spec use))))
 

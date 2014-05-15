@@ -22,15 +22,15 @@
 (facts "About unused-require checker"
 
   (fact "Unused require is reported"
-    (check-test-project) => (contains {:type :unused-require
+    (check-test-project) => (contains {:type :unused-ns-dependency
                                        :ns   'test-project.core
                                        :spec '[test-project.deps.d :as d]})
-    (check-test-project) => (contains {:type :unused-require
+    (check-test-project) => (contains {:type :unused-ns-dependency
                                        :ns   'test-project.core
                                        :spec '[test-project.deps.h :refer :all]}))
 
   (fact "Used require is not reported"
-    (check-test-project) =not=> (contains (contains {:type :unused-require
+    (check-test-project) =not=> (contains (contains {:type :unused-ns-dependency
                                                      :ns   'test-project.core
                                                      :spec (contains 'test-project.deps.a)})))
 
@@ -52,12 +52,12 @@
                                            :spec '[test-project.deps.g :refer :all]}))
 
   (fact "Unused :use is reported"
-    (check-test-project) => (contains {:type :unused-use
+    (check-test-project) => (contains {:type :unused-ns-dependency
                                        :ns   'test-project.core
                                        :spec '[test-project.deps.c :only [main]]}))
 
   (fact "Used :use is not reported"
-    (check-test-project) =not=> (contains {:type :unused-use
+    (check-test-project) =not=> (contains {:type :unused-ns-dependency
                                            :ns   'test-project.core
                                            :spec '[test-project.deps.i]}))
 
