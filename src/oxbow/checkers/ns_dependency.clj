@@ -7,7 +7,7 @@
 
 (defmethod find-unused-refer :all [{required-ns :ns} used-symbols]
   (when-not (seq (get used-symbols required-ns))
-    {:type :unused-require-refer-all}))
+    {:type :unused-require-refer-symbols}))
 
 (defmethod find-unused-refer :default [{required-ns :ns refer :refer} used-symbols]
   (when-let [unused (clojure.set/difference (set refer) (get used-symbols required-ns))]
