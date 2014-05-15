@@ -1,22 +1,28 @@
 (ns oxbow.checkers.ns-dependency
   (:require clojure.set))
 
-(defmulti find-unused-refer (fn [{:keys [refer]} used-symbols] refer))
+(defmulti find-unused-symbols (fn [{:keys [type] :as dep} used-symbols]
+                                (cond
+                                  (and (= :require type) (= :all (:refer dep))) :require-refer-all
+                                  (and (= :require type) (:refer dep))          :require-refer-symbols
+                                  (and (= :use type) (:only dep))               :use-only-symbols)))
 
-(defmethod find-unused-refer nil [& _] nil)
-
-(defmethod find-unused-refer :all [{required-ns :ns} used-symbols]
+(defmethod find-unused-symbols :require-refer-all [{required-ns :ns} used-symbols]
   (when-not (seq (get used-symbols required-ns))
     {:type :unused-require-refer-symbols}))
 
-(defmethod find-unused-refer :default [{required-ns :ns refer :refer} used-symbols]
-  (when-let [unused (clojure.set/difference (set refer) (get used-symbols required-ns))]
+(defn- get-unused-symbols [used-symbols dep-ns dep-symbols]
+  (clojure.set/difference (set dep-symbols) (get used-symbols dep-ns)))
+
+(defmethod find-unused-symbols :require-refer-symbols [{required-ns :ns refer :refer} used-symbols]
+  (when-let [unused (get-unused-symbols used-symbols required-ns refer)]
     {:type :unused-require-refer-symbols :symbols (seq unused)}))
 
-(defn find-unused-use-only [{used-ns :ns only :only} used-symbols]
-  (when only
-    (when-let [unused (clojure.set/difference (set only) (get used-symbols used-ns))]
-      {:type :unused-use-only-symbols :symbols (seq unused)})))
+(defmethod find-unused-symbols :use-only-symbols [{used-ns :ns only :only} used-symbols]
+  (when-let [unused (get-unused-symbols used-symbols used-ns only)]
+    {:type :unused-use-only-symbols :symbols (seq unused)}))
+
+(defmethod find-unused-symbols :default [& _] nil)
 
 (defn- find-unused-dep [{dep-ns :ns} used-nses]
   (when-not (contains? used-nses dep-ns)
@@ -34,19 +40,9 @@
 (defn- used-nses [symbols-to-vars]
   (set (keep var->ns-name (vals symbols-to-vars))))
 
-(defmulti check-ns-dep (fn [ns used-symbols used-nses dep] (:type dep)))
-
-(defmethod check-ns-dep :require [ns used-symbols used-nses require]
-  (when-let [result (or
-                     (find-unused-dep require used-nses)
-                     (find-unused-refer require used-symbols))]
-    (assoc result :ns ns :spec (:spec require))))
-
-(defmethod check-ns-dep :use [ns used-symbols used-nses use]
-  (when-let [result (or
-                      (find-unused-dep use used-nses)
-                      (find-unused-use-only use used-symbols))]
-    (assoc result :ns ns :spec (:spec use))))
+(defn check-ns-dep [ns used-symbols used-nses dep]
+  (when-let [result (or (find-unused-dep dep used-nses) (find-unused-symbols dep used-symbols))]
+    (assoc result :ns ns :spec (:spec dep))))
 
 (defn- check-ns [{:keys [ns symbols-to-vars deps]}]
   (keep (partial check-ns-dep ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars)) deps))
