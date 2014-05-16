@@ -19,7 +19,7 @@
                                            :name 'test-project.deps.c})))
 
 
-(facts "About unused-require checker"
+(facts "About ns-dependency checker"
 
   (fact "Unused require is reported"
     (check-test-project) => (contains {:type :unused-ns-dependency
