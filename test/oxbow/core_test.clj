@@ -71,3 +71,24 @@
     (check-test-project) =not=> (contains (contains {:type :unused-use-only-symbols
                                                      :ns   'test-project.core
                                                      :spec  (contains 'test-project.deps.k)}))))
+
+(facts "About unused-var checker"
+
+  (fact "Unused private var is reported"
+    (check-test-project) => (contains {:type   :unused-var
+                                       :ns     'test-project.core
+                                       :symbol 'square-sum}))
+
+  (fact "Used private var is not reported"
+    (check-test-project) =not=> (contains {:type   :unused-var
+                                           :ns     'test-project.core
+                                           :symbol 'square}))
+  (fact "Unused public var is reported"
+    (check-test-project) => (contains {:type   :unused-var
+                                       :ns     'test-project.core
+                                       :symbol 'execute}))
+
+  (fact "Used public var is not reported"
+    (check-test-project) =not=> (contains {:type   :unused-var
+                                           :ns     'test-project.deps.a
+                                           :symbol 'foo})))

@@ -10,7 +10,13 @@
         [test-project.deps.j :only [configuration j-function]]
         [test-project.deps.k :rename {main k-main}]))
 
-(defn foo []
+(defn- square [x]
+  (* x x))
+
+(defn- square-sum [& xs]
+  (apply + (map square xs)))
+
+(defn execute []
   (a/foo)
   (other-function)
   (f/f-function)

@@ -33,7 +33,8 @@
           (dorun (map eval forms))
           (merge
             {:ns-form ns-form
-             :forms   forms}
+             :forms   forms
+             :interns (ns-interns *ns*)}
             (ns-decl/analyze ns-form)
             (ns-body/analyze forms)))))))
 
