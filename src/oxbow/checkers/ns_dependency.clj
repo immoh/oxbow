@@ -15,12 +15,12 @@
   (clojure.set/difference (set dep-symbols) (get used-symbols dep-ns)))
 
 (defmethod find-unused-symbols :require-refer-symbols [{required-ns :ns refer :refer} used-symbols]
-  (when-let [unused (get-unused-symbols used-symbols required-ns refer)]
-    {:type :unused-require-refer-symbols :symbols (seq unused)}))
+  (when-let [unused (seq (get-unused-symbols used-symbols required-ns refer))]
+    {:type :unused-require-refer-symbols :symbols unused}))
 
 (defmethod find-unused-symbols :use-only-symbols [{used-ns :ns only :only} used-symbols]
-  (when-let [unused (get-unused-symbols used-symbols used-ns only)]
-    {:type :unused-use-only-symbols :symbols (seq unused)}))
+  (when-let [unused (seq (get-unused-symbols used-symbols used-ns only))]
+    {:type :unused-use-only-symbols :symbols unused}))
 
 (defmethod find-unused-symbols :default [& _] nil)
 
