@@ -2,7 +2,9 @@
   (:use midje.sweet)
   (:require [oxbow.core :as core]))
 
-(def check-test-project (memoize (fn [] (core/check "test-resources/test_project"))))
+(def check-test-project (memoize (fn
+                                   ([] (core/check "test-resources/test_project"))
+                                   ([opts] (core/check "test-resources/test_project" opts)))))
 
 (facts "About dead-ns checker"
 
@@ -16,7 +18,11 @@
 
   (fact "Namespaces imported with :use are not reported as dead"
     (check-test-project) =not=> (contains {:type :dead-ns
-                                           :name 'test-project.deps.c})))
+                                           :name 'test-project.deps.c}))
+
+  (fact "API Namespaces are not reported as dead"
+    (check-test-project {:api-namespaces ['test-project.api]}) =not=> (contains {:type :dead-ns
+                                                                                 :name  'test-project.api})))
 
 
 (facts "About ns-dependency checker"
