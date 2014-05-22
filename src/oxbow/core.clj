@@ -6,6 +6,9 @@
                oxbow.checkers.ns-dependency/check
                oxbow.checkers.ns-var/check])
 
-(defn check [path]
-  (let [analyzed-nses (map ns-file/analyze (ns-file/find-recursively path))]
-    (mapcat #(% analyzed-nses) checkers)))
+(defn check
+  ([path]
+   (check path {}))
+  ([path opts]
+   (let [analyzed-nses (map ns-file/analyze (ns-file/find-recursively path))]
+     (mapcat #(% analyzed-nses opts) checkers))))

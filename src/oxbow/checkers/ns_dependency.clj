@@ -47,5 +47,8 @@
 (defn- check-ns [{:keys [ns symbols-to-vars deps]}]
   (keep (partial check-ns-dep ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars)) deps))
 
-(defn check [analyzed-nses]
-  (mapcat check-ns analyzed-nses))
+(defn check
+  ([analyzed-nses]
+   (check analyzed-nses {}))
+  ([analyzed-nses opts]
+   (mapcat check-ns analyzed-nses)))

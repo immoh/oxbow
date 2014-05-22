@@ -12,5 +12,8 @@
 (defn- get-used-vars [analyzed-nses]
   (set (mapcat (comp vals :symbols-to-vars) analyzed-nses)))
 
-(defn check [analyzed-nses]
-  (mapcat (partial check-ns (get-used-vars analyzed-nses)) analyzed-nses))
+(defn check
+  ([analyzed-nses]
+   (check analyzed-nses {}))
+  ([analyzed-nses opts]
+   (mapcat (partial check-ns (get-used-vars analyzed-nses)) analyzed-nses)))
