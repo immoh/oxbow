@@ -97,4 +97,13 @@
   (fact "Used public var is not reported"
     (check-test-project) =not=> (contains {:type   :unused-var
                                            :ns     'test-project.deps.a
-                                           :symbol 'foo})))
+                                           :symbol 'foo}))
+  (fact "Unused private var in API namespace is reported"
+    (check-test-project {:api-namespaces ['test-project.api]}) => (contains {:type   :unused-var
+                                                                             :ns     'test-project.api
+                                                                             :symbol 'helper}))
+
+  (fact "Unused public var in API namespace is not reported"
+    (check-test-project {:api-namespaces ['test-project.api]}) =not=> (contains {:type   :unused-var
+                                                                                 :ns     'test-project.api
+                                                                                 :symbol 'execute})))

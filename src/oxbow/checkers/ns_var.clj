@@ -6,14 +6,22 @@
      :ns     ns
      :symbol symbol}))
 
-(defn- check-ns [used-vars {:keys [ns interns]}]
-  (keep (partial check-ns-intern ns used-vars) interns))
+(defn- private? [[_ var]]
+  (:private (meta var)))
+
+(defn- check-ns [used-vars {:keys [ns interns api-namespace?]}]
+  (keep (partial check-ns-intern ns used-vars)
+        (if api-namespace? (filter private? interns) interns)))
 
 (defn- get-used-vars [analyzed-nses]
   (set (mapcat (comp vals :symbols-to-vars) analyzed-nses)))
+
+(defn- api-namespace? [{:keys [api-namespaces]} ns]
+  (and api-namespaces (api-namespaces ns)))
 
 (defn check
   ([analyzed-nses]
    (check analyzed-nses {}))
   ([analyzed-nses opts]
-   (mapcat (partial check-ns (get-used-vars analyzed-nses)) analyzed-nses)))
+   (mapcat (partial check-ns (get-used-vars analyzed-nses))
+           (map #(assoc % :api-namespace? (api-namespace? opts (:ns %))) analyzed-nses))))
