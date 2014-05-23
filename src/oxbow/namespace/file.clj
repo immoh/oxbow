@@ -43,8 +43,9 @@
     (.isFile file)
     (re-matches #".+.clj.?" (.getName file))))
 
-(defn find-recursively [path]
-  (->> (io/file path)
-       (file-seq)
+(defn find-recursively [paths]
+  (->> paths
+       (map io/file)
+       (mapcat file-seq)
        (filter clojure-file?)
        (sort-by (memfn getAbsolutePath))))

@@ -3,8 +3,8 @@
   (:require [oxbow.core :as core]))
 
 (def check-test-project (memoize (fn
-                                   ([] (core/check "test-resources/test_project"))
-                                   ([opts] (core/check "test-resources/test_project" opts)))))
+                                   ([] (core/check ["test-resources/test_project"]))
+                                   ([opts] (core/check ["test-resources/test_project"] opts)))))
 
 (facts "About dead-ns checker"
 

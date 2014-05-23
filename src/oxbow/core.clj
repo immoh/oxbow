@@ -8,8 +8,8 @@
                oxbow.checkers.ns-var/check])
 
 (defn check
-  ([path]
-   (check path {}))
-  ([path opts]
-   (let [analyzed-nses (map ns-file/analyze (ns-file/find-recursively path))]
+  ([paths]
+   (check paths {}))
+  ([paths opts]
+   (let [analyzed-nses (map ns-file/analyze (ns-file/find-recursively paths))]
      (mapcat #(% analyzed-nses (options/parse opts)) checkers))))
