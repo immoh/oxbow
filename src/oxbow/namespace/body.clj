@@ -9,10 +9,11 @@
   (re-matches #"([^/\.]+\.)+[^/\.]+" (str sym)))
 
 (defn- resolve-and-store [res-atom sym]
-  (when-not (or (local? sym) (ns-name? sym))
-    (let [resolved (resolve sym)]
-      (when (var? resolved)
-        (swap! res-atom assoc sym resolved)))))  
+  (when (symbol? sym)                                       ; riddley leaks vars
+    (when-not (or (local? sym) (ns-name? sym))
+      (let [resolved (resolve sym)]
+        (when (var? resolved)
+          (swap! res-atom assoc sym resolved))))))
 
 (defn- symbols-to-vars [form]
   (let [resolved-symbols (atom {})]
