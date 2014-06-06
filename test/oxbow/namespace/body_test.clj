@@ -20,4 +20,9 @@
   (ns-body/analyze ['(handle-ns clojure.core.async)]) => {:symbols-to-vars {}})
 
 (fact "Handles macro calls with special forms"
-      (ns-body/analyze ['(form->string (catch [:foo] {} nil))]) => {:symbols-to-vars {'form->string #'oxbow.namespace.test-macros/form->string}})
+  (ns-body/analyze ['(form->string (catch [:foo] {} nil))]) => {:symbols-to-vars {'form->string #'oxbow.namespace.test-macros/form->string}})
+
+(fact "Analyzes inside Java interop calls"
+  (binding [*ns* *ns*]
+    (ns test (:require [clojure.set :refer [difference]]))
+    (ns-body/analyze ['(.toString (difference #{1 2} #{1}))]) => (just {:symbols-to-vars (just {'difference anything})})))
