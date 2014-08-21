@@ -24,3 +24,7 @@
   (i-function)
   (j-function)
   (k-main))
+
+(defn plus [x y]
+  (let [y 5]
+    (+ x y)))

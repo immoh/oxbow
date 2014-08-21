@@ -1,11 +1,12 @@
 (ns oxbow.core
-  (:require [oxbow.checkers dead-ns ns-dependency ns-var]
+  (:require [oxbow.checkers dead-ns ns-dependency ns-var unused-local]
             [oxbow.namespace.file :as ns-file]
             [oxbow.options :as options]))
 
 (def checkers [oxbow.checkers.dead-ns/check
                oxbow.checkers.ns-dependency/check
-               oxbow.checkers.ns-var/check])
+               oxbow.checkers.ns-var/check
+               oxbow.checkers.unused-local/check])
 
 (defn check
   ([paths]

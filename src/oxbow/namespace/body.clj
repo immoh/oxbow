@@ -1,5 +1,6 @@
 (ns oxbow.namespace.body
-  (:require [riddley.walk :as walk]
+  (:require [clojure.set]
+            [riddley.walk :as walk]
             [riddley.compiler :as compiler]))
 
 (defn- local? [sym]
@@ -26,5 +27,18 @@
                      form)
     @resolved-symbols))
 
+(defn- get-unused-locals [form]
+  (let [all-bindings-to-symbols (atom {})
+        used-bindings (atom #{})]
+    (walk/walk-exprs (fn [form]
+                       (swap! all-bindings-to-symbols merge (clojure.set/map-invert (compiler/locals)))
+                       (when (symbol? form)
+                         (swap! used-bindings conj (get (compiler/locals) form)))
+                       false)
+                     identity
+                     form)
+    (vals (apply dissoc @all-bindings-to-symbols @used-bindings))))
+
 (defn analyze [forms]
-  {:symbols-to-vars (apply merge (map symbols-to-vars forms))})
+  {:symbols-to-vars (apply merge (map symbols-to-vars forms))
+   :unused-locals   (mapcat get-unused-locals forms)})

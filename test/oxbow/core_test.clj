@@ -125,3 +125,17 @@
     (check-test-project {:api-namespaces ['test-project.api]}) =not=> (contains {:type   :unused-var
                                                                                  :ns     'test-project.api
                                                                                  :symbol 'execute})))
+
+(facts "About unused-local checker"
+  (fact "Unused local is reported"
+    (check-test-project) => (contains {:type   :unused-local
+                                       :ns     'test-project.core
+                                       :symbol 'y
+                                       :line   28
+                                       :column 15}))
+
+  (fact "Used local is not reported"
+    (check-test-project) =not=> (contains {:type    :unused-local
+                                           :ns      'test-project.core
+                                           :symbol  'y
+                                           :line    29})))
