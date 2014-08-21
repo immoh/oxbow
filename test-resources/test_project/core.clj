@@ -24,3 +24,6 @@
   (i-function)
   (j-function)
   (k-main))
+
+(defn increment-first [x y]
+  (inc x))
