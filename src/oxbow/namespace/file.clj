@@ -1,11 +1,13 @@
 (ns oxbow.namespace.file
   (:require [clojure.java.io :as io]
+            [clojure.tools.reader :as reader]
+            [clojure.tools.reader.reader-types :as reader-types]
             [oxbow.namespace [declaration :as ns-decl]
                              [body :as ns-body]])
   (:import [java.io PushbackReader]))
 
 (defn- read* [rdr & {:keys [eof-error? eof-value]}]
-  (read rdr eof-error? eof-value))
+  (reader/read rdr eof-error? eof-value))
 
 (defn- read-next [rdr]
   (read* rdr :eof-error? false :eof-value :eof))
@@ -26,10 +28,11 @@
 (defn analyze [file]
   (println "Analyzing" (.getPath file))
   (binding [*ns* *ns*]
-    (with-open [rdr (PushbackReader. (io/reader file))]
-      (let [ns-form (read-ns-form rdr)]
+    (with-open [pushback-rdr (PushbackReader. (io/reader file))]
+      (let [indexing-rdr (reader-types/indexing-push-back-reader pushback-rdr)
+            ns-form (read-ns-form indexing-rdr)]
         (eval ns-form)
-        (let [forms (read-forms rdr)]
+        (let [forms (read-forms indexing-rdr)]
           (dorun (map eval forms))
           (merge
             {:ns-form ns-form
