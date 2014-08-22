@@ -2,9 +2,12 @@
 
 (defn- check-ns-intern [ns used-vars [symbol var]]
   (when-not (used-vars var)
-    {:type   :unused-var
-     :ns     ns
-     :symbol symbol}))
+    (let [{:keys [line column]} (meta var)]
+      {:type   :unused-var
+       :ns     ns
+       :symbol symbol
+       :line   line
+       :column column})))
 
 (defn- private? [[_ var]]
   (:private (meta var)))

@@ -42,7 +42,8 @@
 
 (defn check-ns-dep [ns used-symbols used-nses dep]
   (when-let [result (or (find-unused-dep dep used-nses) (find-unused-symbols dep used-symbols))]
-    (assoc result :ns ns :spec (:spec dep))))
+    (let [{:keys [line column]} (meta (:spec dep))]
+      (assoc result :ns ns :spec (:spec dep) :line line :column column))))
 
 (defn- check-ns [{:keys [ns symbols-to-vars deps]}]
   (keep (partial check-ns-dep ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars)) deps))
