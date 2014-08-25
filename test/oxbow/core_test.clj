@@ -49,7 +49,7 @@
     (check-test-project) => (contains {:type    :unused-require-refer-symbols
                                        :ns      'test-project.core
                                        :spec    '[test-project.deps.e :refer [my-function other-function]]
-                                       :symbols '(my-function)
+                                       :symbol  'my-function
                                        :line     4
                                        :column   13}))
 
@@ -81,7 +81,7 @@
     (check-test-project) => (contains {:type     :unused-use-only-symbols
                                        :ns      'test-project.core
                                        :spec    '[test-project.deps.j :only [configuration j-function]]
-                                       :symbols '(configuration)
+                                       :symbol  'configuration
                                        :line    10
                                        :column  9}))
 
