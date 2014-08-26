@@ -16,7 +16,7 @@
 (defn- square-sum [& xs]
   (apply + (map square xs)))
 
-(defn execute []
+(defn execute [& _]
   (a/foo)
   (other-function)
   (f/f-function)

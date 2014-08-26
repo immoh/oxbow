@@ -138,4 +138,12 @@
     (check-test-project) =not=> (contains {:type    :unused-local
                                            :ns      'test-project.core
                                            :symbol  'y
-                                           :line    29})))
+                                           :line    29}))
+
+  (fact "Ampersand (&) is not reported as unused local"
+    (check-test-project) =not=> (contains (contains {:type   :unused-local
+                                                     :symbol '&})))
+
+  (fact "Undescore (_) is not reported as unused local"
+    (check-test-project) =not=> (contains (contains {:type   :unused-local
+                                                     :symbol '_}))))

@@ -1,5 +1,7 @@
 (ns oxbow.checkers.unused-local)
 
+(def ^:private exclude-symbols #{'& '_})
+
 (defn- format-result [ns sym]
   (let [{:keys [line column]} (meta sym)]
     {:type   :unused-local
@@ -9,7 +11,9 @@
      :column column}))
 
 (defn- get-unused-locals [{:keys [ns unused-locals]}]
-  (map (partial format-result ns) unused-locals))
+  (->> unused-locals
+       (remove exclude-symbols)
+       (map (partial format-result ns))))
 
 (defn check
   ([analyzed-nses]
