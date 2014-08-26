@@ -13,12 +13,12 @@
                                        :name 'test-project.deps.b}))
 
   (fact "Namespaces imported with :require  are not reported as dead"
-    (check-test-project) =not=> (contains {:type :dead-ns
-                                           :name 'test-project.deps.a}))
+    (check-test-project) =not=> (contains (contains {:type :dead-ns
+                                                     :name 'test-project.deps.a})))
 
   (fact "Namespaces imported with :use are not reported as dead"
-    (check-test-project) =not=> (contains {:type :dead-ns
-                                           :name 'test-project.deps.c}))
+    (check-test-project) =not=> (contains (contains {:type :dead-ns
+                                                     :name 'test-project.deps.c})))
 
   (fact "API Namespaces are not reported as dead"
     (check-test-project {:api-namespaces ['test-project.api]}) =not=> (contains {:type :dead-ns
@@ -61,9 +61,9 @@
                                        :column 13}))
 
   (fact "Require :refer :all with at least one used symbol is not reported as unused"
-    (check-test-project) =not=> (contains {:type :unused-require-refer-symbols
-                                           :ns   'test-project.core
-                                           :spec '[test-project.deps.g :refer :all]}))
+    (check-test-project) =not=> (contains (contains {:type :unused-require-refer-symbols
+                                                     :ns   'test-project.core
+                                                     :spec '[test-project.deps.g :refer :all]})))
 
   (fact "Unused :use is reported"
     (check-test-project) => (contains {:type :unused-ns-dependency
@@ -73,9 +73,9 @@
                                        :column 9}))
 
   (fact "Used :use is not reported"
-    (check-test-project) =not=> (contains {:type :unused-ns-dependency
-                                           :ns   'test-project.core
-                                           :spec '[test-project.deps.i]}))
+    (check-test-project) =not=> (contains (contains {:type :unused-ns-dependency
+                                                     :ns   'test-project.core
+                                                     :spec '[test-project.deps.i]})))
 
   (fact "Unused :use :only symbols are reported"
     (check-test-project) => (contains {:type     :unused-use-only-symbols
@@ -100,9 +100,9 @@
                                        :column  1}))
 
   (fact "Used private var is not reported"
-    (check-test-project) =not=> (contains {:type   :unused-var
-                                           :ns     'test-project.core
-                                           :symbol 'square}))
+    (check-test-project) =not=> (contains (contains {:type   :unused-var
+                                                     :ns     'test-project.core
+                                                     :symbol 'square})))
   (fact "Unused public var is reported"
     (check-test-project) => (contains {:type   :unused-var
                                        :ns     'test-project.core
@@ -111,9 +111,9 @@
                                        :column 1}))
 
   (fact "Used public var is not reported"
-    (check-test-project) =not=> (contains {:type   :unused-var
-                                           :ns     'test-project.deps.a
-                                           :symbol 'foo}))
+    (check-test-project) =not=> (contains (contains {:type   :unused-var
+                                                     :ns     'test-project.deps.a
+                                                     :symbol 'foo})))
   (fact "Unused private var in API namespace is reported"
     (check-test-project {:api-namespaces ['test-project.api]}) => (contains {:type   :unused-var
                                                                              :ns     'test-project.api
@@ -135,10 +135,10 @@
                                        :column 15}))
 
   (fact "Used local is not reported"
-    (check-test-project) =not=> (contains {:type    :unused-local
-                                           :ns      'test-project.core
-                                           :symbol  'y
-                                           :line    29}))
+    (check-test-project) =not=> (contains (contains {:type   :unused-local
+                                                     :ns     'test-project.core
+                                                     :symbol 'y
+                                                     :line   29})))
 
   (fact "Ampersand (&) is not reported as unused local"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
