@@ -28,3 +28,10 @@
 (defn plus [x y]
   (let [y 5]
     (+ x y)))
+
+(defmacro plus+ [x y]
+  `(plus ~x ~y))
+
+(defn watch-fn [_key _ref old new]
+  (println old "->" new))
+

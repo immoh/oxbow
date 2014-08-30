@@ -6,6 +6,10 @@
                                    ([] (core/check ["test-resources/test_project"]))
                                    ([opts] (core/check ["test-resources/test_project"] opts)))))
 
+(defn symbol-starts-with [start]
+  (fn [sym]
+    (.startsWith (name sym) start)))
+
 (facts "About dead-ns checker"
 
   (fact "Namespaces that are not referenced from anywhere are reported as dead"
@@ -140,10 +144,10 @@
                                                      :symbol 'y
                                                      :line   29})))
 
-  (fact "Ampersand (&) is not reported as unused local"
+  (fact "Locals beginning with ampersand (&) are not reported as unused"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
-                                                     :symbol '&})))
+                                                     :symbol (symbol-starts-with "&")})))
 
-  (fact "Undescore (_) is not reported as unused local"
+  (fact "Locals beginning with Undescore (_) are not reported as unused"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
-                                                     :symbol '_}))))
+                                                     :symbol (symbol-starts-with "_")}))))

@@ -1,6 +1,7 @@
 (ns oxbow.checkers.unused-local)
 
-(def ^:private exclude-symbols #{'& '_})
+(defn- exclude-symbol? [sym]
+  (some #(re-matches % (name sym)) [#"&.*" #"_.*"]))
 
 (defn- format-result [ns sym]
   (let [{:keys [line column]} (meta sym)]
@@ -12,7 +13,7 @@
 
 (defn- get-unused-locals [{:keys [ns unused-locals]}]
   (->> unused-locals
-       (remove exclude-symbols)
+       (remove exclude-symbol?)
        (map (partial format-result ns))))
 
 (defn check
