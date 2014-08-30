@@ -1,7 +1,8 @@
 (ns oxbow.checkers.unused-local)
 
 (defn- exclude-symbol? [sym]
-  (some #(re-matches % (name sym)) [#"&.*" #"_.*"]))
+  (when sym
+    (some #(re-matches % (name sym)) [#"&.*" #"_.*"])))
 
 (defn- format-result [ns sym]
   (let [{:keys [line column]} (meta sym)]
