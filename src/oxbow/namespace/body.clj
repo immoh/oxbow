@@ -49,7 +49,7 @@
                      form)
     (let [{:keys [symbols-to-vars bindings-to-symbols used-bindings]} @result]
       {:symbols-to-vars symbols-to-vars
-       :unused-locals   (vals (apply dissoc bindings-to-symbols used-bindings))})))
+       :unused-locals   (vals (apply dissoc bindings-to-symbols (conj used-bindings :riddley.compiler/analyze-failure)))})))
 
 (defn analyze [forms]
   (let [analyzed-forms (map analyze-form forms)]
