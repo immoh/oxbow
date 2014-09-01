@@ -22,6 +22,13 @@
 (defn- store-used-binding [result-atom symbol]
   (swap! result-atom update-in [:used-bindings] conj (get (compiler/locals) symbol)))
 
+(defmulti handle-special-form (fn [result-atom form] (first form)))
+
+(defmethod handle-special-form 'case* [result-atom [_ generated-sym & _]]
+  (store-used-binding result-atom generated-sym))
+
+(defmethod handle-special-form :default [& _])
+
 (defn analyze-form [form]
   (let [result (atom {:symbols-to-vars {}
                       :bindings-to-symbols {}
@@ -31,6 +38,8 @@
                        (when (symbol? form)
                          (store-used-binding result form)
                          (resolve-and-store result form))
+                       (when (and (seq? form) (special-symbol? (first form)))
+                         (handle-special-form result form))
                        false)
                      (constantly nil)
                      (fn [first-of-form]
