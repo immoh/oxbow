@@ -32,3 +32,6 @@
 
 (fact "Doesn't report unused symbols for case form with default value"
   (ns-body/analyze-form '(case x 0 0 nil)) => (contains {:unused-locals nil}))
+
+(fact "Reports unused locals only once"
+  (ns-body/analyze-form '(doseq [x nil])) => (contains {:unused-locals '(x)}))

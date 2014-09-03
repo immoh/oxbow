@@ -29,6 +29,24 @@
 
 (defmethod handle-special-form :default [& _])
 
+(defn- with-meta= [x y]
+  (and (= x y)
+       (= (meta x) (meta y))))
+
+(defn- distinct-with-meta [coll]
+  (reduce (fn [coll x]
+            (if (some (partial with-meta= x) coll)
+              coll
+              (conj coll x)))
+          (take 1 coll)
+          (rest coll)))
+
+(defn- unused-locals [{:keys [bindings-to-symbols used-bindings]}]
+  (-> (apply dissoc bindings-to-symbols (conj used-bindings :riddley.compiler/analyze-failure))
+      vals
+      distinct-with-meta
+      seq))
+
 (defn analyze-form [form]
   (let [result (atom {:symbols-to-vars {}
                       :bindings-to-symbols {}
@@ -47,9 +65,8 @@
                          (resolve-and-store result first-of-form))
                        false)
                      form)
-    (let [{:keys [symbols-to-vars bindings-to-symbols used-bindings]} @result]
-      {:symbols-to-vars symbols-to-vars
-       :unused-locals   (vals (apply dissoc bindings-to-symbols (conj used-bindings :riddley.compiler/analyze-failure)))})))
+    {:symbols-to-vars (:symbols-to-vars @result)
+     :unused-locals   (unused-locals @result)}))
 
 (defn analyze [forms]
   (let [analyzed-forms (map analyze-form forms)]
