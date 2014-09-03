@@ -35,3 +35,5 @@
 (defn watch-fn [_key _ref old new]
   (println old "->" new))
 
+(defprotocol Foo)
+
