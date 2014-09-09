@@ -2,7 +2,7 @@
 
 (defn- exclude-symbol? [sym]
   (when sym
-    (some #(re-matches % (name sym)) [#"&.*" #"_.*"])))
+    (re-matches #"[&|_].*" (name sym))))
 
 (defn- format-result [ns sym]
   (let [{:keys [line column]} (meta sym)]

@@ -6,9 +6,9 @@
                                    ([] (core/check ["test-resources/test_project"]))
                                    ([opts] (core/check ["test-resources/test_project"] opts)))))
 
-(defn symbol-starts-with [start]
+(defn- symbol-matching-regex [re]
   (fn [sym]
-    (.startsWith (name sym) start)))
+    (re-matches re (name sym))))
 
 (facts "About dead-ns checker"
 
@@ -146,8 +146,8 @@
 
   (fact "Locals beginning with ampersand (&) are not reported as unused"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
-                                                     :symbol (symbol-starts-with "&")})))
+                                                     :symbol (symbol-matching-regex #"&.*")})))
 
   (fact "Locals beginning with Undescore (_) are not reported as unused"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
-                                                     :symbol (symbol-starts-with "_")}))))
+                                                     :symbol (symbol-matching-regex #"_.*")}))))
