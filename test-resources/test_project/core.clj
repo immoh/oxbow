@@ -4,7 +4,8 @@
             [test-project.deps.e :refer [my-function other-function]]
             [test-project.deps.f :as f :refer :all]
             [test-project.deps.g :refer :all]
-            [test-project.deps.h :refer :all])
+            [test-project.deps.h :refer :all]
+            [slingshot.slingshot :refer [try+]])
   (:use [test-project.deps.c :only [main]]
         [test-project.deps.i]
         [test-project.deps.j :only [configuration j-function]]
@@ -42,3 +43,9 @@
   (println old "->" new))
 
 (defprotocol Foo)
+
+(defn slingshot-test []
+  (try+
+    (/ 5 0)
+    (catch [:type ::division-by-zero] {}
+      (println "Division by zero!"))))

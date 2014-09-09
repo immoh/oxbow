@@ -73,7 +73,7 @@
     (check-test-project) => (contains {:type :unused-ns-dependency
                                        :ns     'test-project.core
                                        :spec   '[test-project.deps.c :only [main]]
-                                       :line   8
+                                       :line   9
                                        :column 9}))
 
   (fact "Used :use is not reported"
@@ -86,7 +86,7 @@
                                        :ns      'test-project.core
                                        :spec    '[test-project.deps.j :only [configuration j-function]]
                                        :symbol  'configuration
-                                       :line    10
+                                       :line    11
                                        :column  9}))
 
   (fact "Used :use symbol wth :rename is not reported"
@@ -100,7 +100,7 @@
     (check-test-project) => (contains {:type   :unused-var
                                        :ns     'test-project.core
                                        :symbol 'square-sum
-                                       :line    16
+                                       :line    17
                                        :column  1}))
 
   (fact "Used private var is not reported"
@@ -111,7 +111,7 @@
     (check-test-project) => (contains {:type   :unused-var
                                        :ns     'test-project.core
                                        :symbol 'execute
-                                       :line   19
+                                       :line   20
                                        :column 1}))
 
   (fact "Used public var is not reported"
@@ -135,14 +135,14 @@
     (check-test-project) => (contains {:type   :unused-local
                                        :ns     'test-project.core
                                        :symbol 'y
-                                       :line   28
+                                       :line   29
                                        :column 15}))
 
   (fact "Used local is not reported"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
                                                      :ns     'test-project.core
                                                      :symbol 'y
-                                                     :line   29})))
+                                                     :line   30})))
 
   (fact "Locals beginning with ampersand (&) are not reported as unused"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
@@ -154,4 +154,8 @@
 
   (fact "Generated symbols in syntax quoted forms are not reported as unused"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
-                                                     :symbol (symbol-matching-regex #".*__auto__")}))))
+                                                     :symbol (symbol-matching-regex #".*__auto__")})))
+
+  (fact "Symbols without location are not reported as unused"
+    (check-test-project) =not=> (contains (contains {:type :unused-local
+                                                     :line nil}))))

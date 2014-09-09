@@ -7,5 +7,6 @@
                  [org.clojure/tools.reader "0.8.7"]
                  [riddley "0.1.8-SNAPSHOT"]]
   :plugins [[lein-midje "3.1.3"]]
-  :profiles {:dev {:dependencies [[midje "1.6.3"]]
+  :profiles {:dev {:dependencies [[midje "1.6.3"]
+                                  [slingshot "0.10.3"]]
                    :source-paths ["test-resources/"]}})
