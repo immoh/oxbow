@@ -150,4 +150,8 @@
 
   (fact "Locals beginning with Undescore (_) are not reported as unused"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
-                                                     :symbol (symbol-matching-regex #"_.*")}))))
+                                                     :symbol (symbol-matching-regex #"_.*")})))
+
+  (fact "Generated symbols in syntax quoted forms are not reported as unused"
+    (check-test-project) =not=> (contains (contains {:type   :unused-local
+                                                     :symbol (symbol-matching-regex #".*__auto__")}))))

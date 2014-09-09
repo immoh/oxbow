@@ -29,11 +29,16 @@
   (let [y 5]
     (+ x y)))
 
-(defmacro plus+ [x y]
-  `(plus ~x ~y))
+(defmacro with-exception-printing [& body]
+  `(try
+     (do ~@body)
+     (catch Exception e#
+       (println "Exception!"))))
+
+(defn divide-by-zero [x]
+  (with-exception-printing (/ x 0)))
 
 (defn watch-fn [_key _ref old new]
   (println old "->" new))
 
 (defprotocol Foo)
-
