@@ -1,8 +1,8 @@
 (ns oxbow.checkers.ns-var)
 
 (defn- check-ns-intern [ns used-vars [symbol var]]
-  (when-not (used-vars var)
-    (let [{:keys [line column]} (meta var)]
+  (let [{:keys [line column]} (meta var)]
+    (when (and line (not (used-vars var)))
       {:type   :unused-var
        :ns     ns
        :symbol symbol

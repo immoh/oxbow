@@ -49,3 +49,5 @@
     (/ 5 0)
     (catch [:type ::division-by-zero] {}
       (println "Division by zero!"))))
+
+(def proxy-objext (proxy [Object] []))

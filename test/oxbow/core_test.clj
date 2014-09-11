@@ -128,7 +128,11 @@
   (fact "Unused public var in API namespace is not reported"
     (check-test-project {:api-namespaces ['test-project.api]}) =not=> (contains {:type   :unused-var
                                                                                  :ns     'test-project.api
-                                                                                 :symbol 'execute})))
+                                                                                 :symbol 'execute}))
+
+  (fact "Unused vars without position are not reported"
+    (check-test-project) =not=> (contains (contains {:type :unused-var
+                                                     :line nil}))))
 
 (facts "About unused-local checker"
   (fact "Unused local is reported"
