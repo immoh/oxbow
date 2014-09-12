@@ -47,24 +47,61 @@
       distinct-with-meta
       seq))
 
+(defn- add-nil-body-at-index [n form]
+  (concat form
+          (when-not (seq (drop n form))
+            [nil])))
+
+(defn- ensure-fn-bodies-not-empty [form]
+  (let [[prelude remainder] (split-with (complement sequential?) form)
+        remainder (if (vector? (first remainder))
+                    (list remainder)
+                    remainder)]
+    (concat prelude (map (partial add-nil-body-at-index 1) remainder))))
+
+(defn- ensure-reify-bodies-not-empty [[_ classes & methods]]
+  (list* 'reify* classes (map (partial add-nil-body-at-index 2) methods)))
+
+(def ^:private ensure-body-not-empty-fns
+  {'let*   (partial add-nil-body-at-index 2)
+   'loop*  (partial add-nil-body-at-index 2)
+   'catch  (partial add-nil-body-at-index 3)
+   'fn*    ensure-fn-bodies-not-empty
+   'reify* ensure-reify-bodies-not-empty})
+
+(defn- binding-form? [form]
+  (and (seq? form) (ensure-body-not-empty-fns (first form))))
+
+(defn collection-information [result form]
+  (store-bindings-from-env result)
+  (when (symbol? form)
+    (store-used-binding result form)
+    (resolve-and-store result form))
+  (when (and (seq? form) (special-symbol? (first form)))
+    (handle-special-form result form)))
+
+(defn walk-exprs [result form]
+  (walk/walk-exprs (fn [form]
+                     (let [handle-empty-bodies? (and (binding-form? form)
+                                                     (not (-> form meta ::empty-bodies-handled)))]
+                       (if handle-empty-bodies?
+                         (compiler/with-lexical-scoping
+                           (walk-exprs result (with-meta ((ensure-body-not-empty-fns (first form)) form)
+                                                         (merge (meta form) {::empty-bodies-handled true}))))
+                         (collection-information result form))
+                       handle-empty-bodies?))
+                   (constantly nil)
+                   (fn [first-of-form]
+                     (when (symbol? first-of-form)
+                       (resolve-and-store result first-of-form))
+                     false)
+                   form))
+
 (defn analyze-form [form]
   (let [result (atom {:symbols-to-vars {}
                       :bindings-to-symbols {}
                       :used-bindings #{}})]
-    (walk/walk-exprs (fn [form]
-                       (store-bindings-from-env result)
-                       (when (symbol? form)
-                         (store-used-binding result form)
-                         (resolve-and-store result form))
-                       (when (and (seq? form) (special-symbol? (first form)))
-                         (handle-special-form result form))
-                       false)
-                     (constantly nil)
-                     (fn [first-of-form]
-                       (when (symbol? first-of-form)
-                         (resolve-and-store result first-of-form))
-                       false)
-                     form)
+    (walk-exprs result form)
     {:symbols-to-vars (:symbols-to-vars @result)
      :unused-locals   (unused-locals @result)}))
 

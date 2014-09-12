@@ -32,3 +32,11 @@
 
 (fact "Reports unused locals only once"
   (ns-body/analyze-form '(doseq [x nil])) => (contains {:unused-locals '(x)}))
+
+(fact "Reports unused locals for binding forms with empty body"
+  (ns-body/analyze-form '(let [x 1])) => (contains {:unused-locals '(x)})
+  (ns-body/analyze-form '(fn [x])) => (contains {:unused-locals '(x)})
+  (ns-body/analyze-form '(loop [x 1])) => (contains {:unused-locals '(x)})
+  (ns-body/analyze-form '(letfn [(f [])])) => (contains {:unused-locals '(f)})
+  (ns-body/analyze-form '(try 1 (catch Exception e))) => (contains {:unused-locals '(e)})
+  (ns-body/analyze-form '(reify Object (toString [this]))) => (contains {:unused-locals '(this)}))
