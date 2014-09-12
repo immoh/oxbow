@@ -13,4 +13,4 @@
    (check paths {}))
   ([paths opts]
    (let [analyzed-nses (map ns-file/analyze (ns-file/find-recursively paths))]
-     (mapcat #(% analyzed-nses (options/parse opts)) checkers))))
+     (mapcat #(% analyzed-nses opts) checkers))))

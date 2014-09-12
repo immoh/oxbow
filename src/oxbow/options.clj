@@ -1,14 +1,10 @@
 (ns oxbow.options)
 
-(defmulti parse-option-value (fn [[option value]] option))
+(defn- create-matcher-fn [value]
+  (cond
+    (nil? value)  (constantly false)
+    (coll? value) (set (map symbol value))
+    :else         #{(symbol value)}))
 
-(defmethod parse-option-value :api-namespaces [[_ value]]
-  (when value
-    {:api-namespaces (if (coll? value)
-                       (set (map symbol value))
-                       #{(symbol value)})}))
-
-(defmethod parse-option-value :default [& _] nil)
-
-(defn parse [opts]
-  (apply merge (keep parse-option-value opts)))
+(defn api-namespace? [opts ns-symbol]
+  ((create-matcher-fn (:api-namespaces opts)) ns-symbol))
