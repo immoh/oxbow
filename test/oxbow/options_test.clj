@@ -13,4 +13,6 @@
   "clojure.core"                 'clojure.test    falsey
   ['clojure.core "clojure.set"]  'clojure.core    truthy
   ['clojure.core "clojure.set"]  'clojure.set     truthy
-  ['clojure.core "clojure.set"]  'clojure.test    falsey)
+  ['clojure.core "clojure.set"]  'clojure.test    falsey
+  :all                           'clojure.core    truthy
+  :all                           'clojure.test    truthy)
