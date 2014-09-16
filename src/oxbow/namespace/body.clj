@@ -29,22 +29,9 @@
 
 (defmethod handle-special-form :default [& _])
 
-(defn- with-meta= [x y]
-  (and (= x y)
-       (= (meta x) (meta y))))
-
-(defn- distinct-with-meta [coll]
-  (reduce (fn [coll x]
-            (if (some (partial with-meta= x) coll)
-              coll
-              (conj coll x)))
-          (take 1 coll)
-          (rest coll)))
-
 (defn- unused-locals [{:keys [bindings-to-symbols used-bindings]}]
   (-> (apply dissoc bindings-to-symbols (conj used-bindings :riddley.compiler/analyze-failure))
       vals
-      distinct-with-meta
       seq))
 
 (defn- add-nil-body-at-index [n form]

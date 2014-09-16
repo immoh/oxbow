@@ -163,3 +163,9 @@
   (fact "Symbols without location are not reported as unused"
     (check-test-project) =not=> (contains (contains {:type :unused-local
                                                      :line nil}))))
+
+(defn- duplicates [coll]
+  (keep (fn [[k count]] (when (> count 1) k)) (frequencies coll)))
+
+(fact "Doesn't contain duplicate results"
+  (duplicates (check-test-project)) => empty?)

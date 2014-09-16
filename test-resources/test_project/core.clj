@@ -51,3 +51,5 @@
       (println "Division by zero!"))))
 
 (def proxy-objext (proxy [Object] []))
+
+(doseq [x nil])

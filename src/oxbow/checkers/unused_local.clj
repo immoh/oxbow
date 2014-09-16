@@ -17,7 +17,8 @@
 (defn- get-unused-locals [{:keys [ns unused-locals]}]
   (->> unused-locals
        (remove exclude-symbol?)
-       (map (partial format-result ns))))
+       (map (partial format-result ns))
+       distinct))
 
 (defn check
   ([analyzed-nses]
