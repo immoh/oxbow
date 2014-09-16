@@ -53,3 +53,7 @@
 (def proxy-objext (proxy [Object] []))
 
 (doseq [x nil])
+
+(defn constantly-nil [x]
+  (let [x nil]
+    nil))
