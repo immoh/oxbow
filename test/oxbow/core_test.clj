@@ -165,12 +165,17 @@
                                                      :line nil})))
 
   (fact "Several unused locals using the same symbol are reported"
-    (check-test-project) => (contains (contains {:type    :unused-local
-                                                 :symbol  'x
-                                                 :line    57}
-                                                {:type    :unused-local
-                                                 :symbol  'x
-                                                 :line    58}))))
+    (check-test-project) => (contains {:type   :unused-local
+                                       :ns     'test-project.core
+                                       :symbol 'x
+                                       :line   57
+                                       :column 23}
+                                      {:type   :unused-local
+                                       :ns     'test-project.core
+                                       :symbol 'x
+                                       :line   58
+                                       :column 9}
+                                      :in-any-order)))
 
 (defn- duplicates [coll]
   (keep (fn [[k count]] (when (> count 1) k)) (frequencies coll)))
