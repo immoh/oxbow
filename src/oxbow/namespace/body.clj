@@ -30,34 +30,50 @@
 (defmethod handle-special-form :default [& _])
 
 (defn- unused-locals [{:keys [bindings-to-symbols used-bindings]}]
-  (-> (apply dissoc bindings-to-symbols (conj used-bindings :riddley.compiler/analyze-failure))
-      vals
-      seq))
+  (->> (apply dissoc bindings-to-symbols (conj used-bindings :riddley.compiler/analyze-failure))
+       vals
+       (remove #(-> % meta ::skip-unused))
+       seq))
 
 (defn- add-nil-body-at-index [n form]
   (concat form
           (when-not (seq (drop n form))
             [nil])))
 
-(defn- ensure-fn-bodies-not-empty [form]
+(defmulti ^:private ensure-binding-form-body-not-empty first)
+
+(defmethod ensure-binding-form-body-not-empty 'fn* [form]
   (let [[prelude remainder] (split-with (complement sequential?) form)
         remainder (if (vector? (first remainder))
                     (list remainder)
                     remainder)]
     (concat prelude (map (partial add-nil-body-at-index 1) remainder))))
 
-(defn- ensure-reify-bodies-not-empty [[_ classes & methods]]
+(defmethod ensure-binding-form-body-not-empty 'reify* [[_ classes & methods]]
   (list* 'reify* classes (map (partial add-nil-body-at-index 2) methods)))
 
-(def ^:private ensure-body-not-empty-fns
-  {'let*   (partial add-nil-body-at-index 2)
-   'loop*  (partial add-nil-body-at-index 2)
-   'catch  (partial add-nil-body-at-index 3)
-   'fn*    ensure-fn-bodies-not-empty
-   'reify* ensure-reify-bodies-not-empty})
+(defmethod ensure-binding-form-body-not-empty 'let*    [form] (add-nil-body-at-index 2 form))
+(defmethod ensure-binding-form-body-not-empty 'letfn*  [form] (add-nil-body-at-index 2 form))
+(defmethod ensure-binding-form-body-not-empty 'loop*   [form] (add-nil-body-at-index 2 form))
+(defmethod ensure-binding-form-body-not-empty 'catch   [form] (add-nil-body-at-index 3 form))
+(defmethod ensure-binding-form-body-not-empty :default [form] form)
 
-(defn- binding-form? [form]
-  (and (seq? form) (ensure-body-not-empty-fns (first form))))
+(defn- mark-fn-name-skip-unused [[fn name & body]]
+  (list* fn (vary-meta name assoc ::skip-unused true) body))
+
+(defmulti ^:private mark-locals-skip-unused first)
+
+(defmethod mark-locals-skip-unused 'letfn* [[_ bindings & body]]
+  (list* 'letfn*
+         (vec (mapcat (fn [[k v]] [k (mark-fn-name-skip-unused v)]) (partition-all 2 bindings)))
+         body))
+
+(defmethod mark-locals-skip-unused  :default [form] form)
+
+(defn- transform-form [form]
+  (-> form
+      ensure-binding-form-body-not-empty
+      mark-locals-skip-unused))
 
 (defn collection-information [result form]
   (store-bindings-from-env result)
@@ -67,22 +83,30 @@
   (when (and (seq? form) (special-symbol? (first form)))
     (handle-special-form result form)))
 
-(defn walk-exprs [result form]
-  (walk/walk-exprs (fn [form]
-                     (let [handle-empty-bodies? (and (binding-form? form)
-                                                     (not (-> form meta ::empty-bodies-handled)))]
-                       (if handle-empty-bodies?
-                         (compiler/with-lexical-scoping
-                           (walk-exprs result (with-meta ((ensure-body-not-empty-fns (first form)) form)
-                                                         (merge (meta form) {::empty-bodies-handled true}))))
-                         (collection-information result form))
-                       handle-empty-bodies?))
-                   (constantly nil)
-                   (fn [first-of-form]
-                     (when (symbol? first-of-form)
-                       (resolve-and-store result first-of-form))
-                     false)
-                   form))
+(defn walk-exprs
+  ([result form]
+   (walk-exprs result form false))
+  ([result form special-form?]
+    (walk/walk-exprs (fn [form]
+                       (let [seq-not-transformed? (and (seq? form)
+                                                       (not special-form?)
+                                                       (not (-> form meta ::transformed)))]
+                         (if seq-not-transformed?
+                           (compiler/with-lexical-scoping
+                             (walk-exprs result
+                                         (with-meta (transform-form form) (merge (meta form) {::transformed true}))
+                                         special-form?))
+                           (collection-information result form))
+                         (when (and (seq? form)
+                                    (= 'quote (first form)))
+                           (walk-exprs result (rest form) true))
+                         seq-not-transformed?))
+                     (constantly nil)
+                     (fn [first-of-form]
+                       (when (symbol? first-of-form)
+                         (resolve-and-store result first-of-form))
+                       special-form?)
+                     form)))
 
 (defn analyze-form [form]
   (let [result (atom {:symbols-to-vars {}

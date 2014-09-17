@@ -174,8 +174,20 @@
                                        :ns     'test-project.core
                                        :symbol 'x
                                        :line   58
-                                       :column 9}
-                                      :in-any-order)))
+                                       :column 9} :in-any-order))
+
+  (fact "Unused functions in letfn are reported"
+    (check-test-project) => (contains {:type   :unused-local
+                                       :ns     'test-project.core
+                                       :symbol 'f
+                                       :line   61
+                                       :column 10}))
+
+  (fact "Used function in letfn are not reported"
+    (check-test-project) =not=> (contains (contains {:type   :unused-local
+                                                     :ns     'test-project.core
+                                                     :symbol 'g
+                                                     :line   62}))))
 
 (defn- duplicates [coll]
   (keep (fn [[k count]] (when (> count 1) k)) (frequencies coll)))

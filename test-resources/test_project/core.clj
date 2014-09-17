@@ -57,3 +57,7 @@
 (defn constantly-nil [x]
   (let [x nil]
     nil))
+
+(letfn [(f [] 1)
+        (g [x] x)]
+  (g 1))
