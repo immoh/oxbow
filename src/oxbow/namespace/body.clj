@@ -112,7 +112,10 @@
   (let [result (atom {:symbols-to-vars {}
                       :bindings-to-symbols {}
                       :used-bindings #{}})]
-    (walk-exprs result form)
+    (try
+      (walk-exprs result form)
+      (catch Throwable t
+        (throw (ex-info "Failed to analyze form" {:type ::analyze-failure :form form} t))))
     {:symbols-to-vars (:symbols-to-vars @result)
      :unused-locals   (unused-locals @result)}))
 
