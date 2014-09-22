@@ -27,9 +27,6 @@
     (ns test (:require [clojure.set :refer [difference]]))
     (ns-body/analyze ['(.toString (difference #{1 2} #{1}))]) => (contains {:symbols-to-vars (just {'difference anything})})))
 
-(fact "Doesn't report unused symbols for case form with default value"
-  (ns-body/analyze-form '(case x 0 0 nil)) => (contains {:unused-locals nil}))
-
 (fact "Reports unused locals for binding forms with empty body"
   (ns-body/analyze-form '(let [x 1])) => (contains {:unused-locals '(x)})
   (ns-body/analyze-form '(fn [x])) => (contains {:unused-locals '(x)})

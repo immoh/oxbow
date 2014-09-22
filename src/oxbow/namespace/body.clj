@@ -22,13 +22,6 @@
 (defn- store-used-binding [result-atom symbol]
   (swap! result-atom update-in [:used-bindings] conj (get (compiler/locals) symbol)))
 
-(defmulti handle-special-form (fn [result-atom form] (first form)))
-
-(defmethod handle-special-form 'case* [result-atom [_ generated-sym & _]]
-  (store-used-binding result-atom generated-sym))
-
-(defmethod handle-special-form :default [& _])
-
 (defn- unused-locals [{:keys [bindings-to-symbols used-bindings]}]
   (->> (apply dissoc bindings-to-symbols (conj used-bindings :riddley.compiler/analyze-failure))
        vals
@@ -79,9 +72,7 @@
   (store-bindings-from-env result)
   (when (symbol? form)
     (store-used-binding result form)
-    (resolve-and-store result form))
-  (when (and (seq? form) (special-symbol? (first form)))
-    (handle-special-form result form)))
+    (resolve-and-store result form)))
 
 (defn walk-exprs
   ([result form]
