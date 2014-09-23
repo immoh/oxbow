@@ -2,9 +2,6 @@
   (:require clojure.set
             clojure.string))
 
-(defn- line-and-column [form]
-  (select-keys (meta form) [:line :column]))
-
 (defmulti find-unused-symbols (fn [{:keys [type] :as dep} used-symbols]
                                 (cond
                                   (and (= :require type) (= :all (:refer dep))) :require-refer-all
@@ -13,13 +10,13 @@
 
 (defmethod find-unused-symbols :require-refer-all [{required-ns :ns spec :spec} used-symbols]
   (when-not (seq (get used-symbols required-ns))
-    [(merge {:type :unused-require-refer-symbols} (line-and-column spec))]))
+    [{:type :unused-require-refer-symbols}]))
 
 (defn- get-unused-symbols [used-symbols dep-ns dep-symbols]
   (clojure.set/difference (set dep-symbols) (get used-symbols dep-ns)))
 
 (defn- unused-symbol-result [type unused-symbol]
-  (merge {:type type :symbol unused-symbol} (line-and-column unused-symbol)))
+  {:type type :symbol unused-symbol})
 
 (defmethod find-unused-symbols :require-refer-symbols [{required-ns :ns refer :refer} used-symbols]
   (map (partial unused-symbol-result :unused-require-refer-symbols) (get-unused-symbols used-symbols required-ns refer)))
@@ -31,7 +28,7 @@
 
 (defn- find-unused-dep [{dep-ns :ns spec :spec} used-nses]
   (when-not (contains? used-nses dep-ns)
-    [(merge {:type :unused-ns-dependency} (line-and-column spec))]))
+    [{:type :unused-ns-dependency}]))
 
 (defn- var->ns-name [v]
   (-> v .-ns ns-name))
