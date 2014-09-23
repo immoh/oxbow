@@ -9,7 +9,9 @@
   (:use [test-project.deps.c :only [main]]
         [test-project.deps.i]
         [test-project.deps.j :only [configuration j-function]]
-        [test-project.deps.k :rename {main k-main}]))
+        [test-project.deps.k :rename {main k-main}])
+  (:import [java.util Date Calendar]
+           java.io.File javax.swing.JPanel))
 
 (defn- square [x]
   (* x x))
@@ -61,3 +63,9 @@
 (letfn [(f [] 1)
         (g [x] x)]
   (g 1))
+
+(defn current-date []
+  (Date.))
+
+(defn list-roots []
+  (File/listRoots))

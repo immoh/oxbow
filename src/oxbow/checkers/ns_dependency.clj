@@ -1,5 +1,6 @@
 (ns oxbow.checkers.ns-dependency
-  (:require clojure.set))
+  (:require clojure.set
+            clojure.string))
 
 (defn- line-and-column [form]
   (select-keys (meta form) [:line :column]))
@@ -51,10 +52,26 @@
 (defn- check-ns-dep [ns used-symbols used-nses dep]
   (map (partial format-result ns dep) (or (find-unused-dep dep used-nses) (find-unused-symbols dep used-symbols))))
 
+(defn- unqualify-class-name-symbol [s]
+  (when-let [s (name s)]
+    (when-let [class-name (last (clojure.string/split (name s) #"\."))]
+      (symbol class-name))))
+
+(defn- class->symbol [c]
+  (when c
+    (symbol (.getName c))))
+
+(defn- check-import [ns symbols-to-classes {:keys [class] :as dep}]
+  (when-not (= class (class->symbol (get symbols-to-classes (unqualify-class-name-symbol class))))
+    (format-result ns dep {:type :unused-import :class class})))
+
 (defn- check-ns [{:keys [ns resolved-symbols deps]}]
-  (let [symbols-to-vars (into {} (filter (comp var? val) resolved-symbols))]
-    (mapcat (partial check-ns-dep ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars))
-            (filter (comp #{:require :use} :type) deps))))
+  (let [symbols-to-vars (into {} (filter (comp var? val) resolved-symbols))
+        symbols-to-classes (into {} (filter (comp class? val) resolved-symbols))]
+    (concat (mapcat (partial check-ns-dep ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars))
+                    (filter (comp #{:require :use} :type) deps))
+            (keep (partial check-import ns symbols-to-classes)
+                  (filter #(= :import (:type %)) deps)))))
 
 (defn check
   ([analyzed-nses]

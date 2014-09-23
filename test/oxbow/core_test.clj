@@ -92,7 +92,33 @@
   (fact "Used :use symbol wth :rename is not reported"
     (check-test-project) =not=> (contains (contains {:type :unused-use-only-symbols
                                                      :ns   'test-project.core
-                                                     :spec  (contains 'test-project.deps.k)}))))
+                                                     :spec  (contains 'test-project.deps.k)})))
+
+  (fact "Unused Java import is reported"
+    (check-test-project) => (contains {:type   :unused-import
+                                       :ns     'test-project.core
+                                       :spec   'javax.swing.JPanel
+                                       :line    14
+                                       :column  25
+                                       :class   'javax.swing.JPanel}))
+
+  (fact "Used Java import is not reported"
+    (check-test-project) =not=> (contains (contains {:type   :unused-import
+                                                     :ns     'test-project.core
+                                                     :class   'java.util.Date})))
+  
+  (fact "Unused Java import with packapage prefix is reported"
+    (check-test-project) => (contains {:type   :unused-import
+                                       :ns     'test-project.core
+                                       :spec   '[java.util Date Calendar]
+                                       :line    13
+                                       :column  12
+                                       :class   'java.util.Calendar}))
+
+  (fact "Used Java import with packapage prefix is not reported"
+    (check-test-project) =not=> (contains (contains {:type   :unused-import
+                                                     :ns     'test-project.core
+                                                     :class   'java.util.Date}))))
 
 (facts "About unused-var checker"
 
@@ -100,7 +126,7 @@
     (check-test-project) => (contains {:type   :unused-var
                                        :ns     'test-project.core
                                        :symbol 'square-sum
-                                       :line    17
+                                       :line    19
                                        :column  1}))
 
   (fact "Used private var is not reported"
@@ -111,7 +137,7 @@
     (check-test-project) => (contains {:type   :unused-var
                                        :ns     'test-project.core
                                        :symbol 'execute
-                                       :line   20
+                                       :line   22
                                        :column 1}))
 
   (fact "Used public var is not reported"
@@ -139,14 +165,14 @@
     (check-test-project) => (contains {:type   :unused-local
                                        :ns     'test-project.core
                                        :symbol 'y
-                                       :line   29
+                                       :line   31
                                        :column 15}))
 
   (fact "Used local is not reported"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
                                                      :ns     'test-project.core
                                                      :symbol 'y
-                                                     :line   30})))
+                                                     :line   32})))
 
   (fact "Locals beginning with ampersand (&) are not reported as unused"
     (check-test-project) =not=> (contains (contains {:type   :unused-local
@@ -168,19 +194,19 @@
     (check-test-project) => (contains {:type   :unused-local
                                        :ns     'test-project.core
                                        :symbol 'x
-                                       :line   57
+                                       :line   59
                                        :column 23}
                                       {:type   :unused-local
                                        :ns     'test-project.core
                                        :symbol 'x
-                                       :line   58
+                                       :line   60
                                        :column 9} :in-any-order))
 
   (fact "Unused functions in letfn are reported"
     (check-test-project) => (contains {:type   :unused-local
                                        :ns     'test-project.core
                                        :symbol 'f
-                                       :line   61
+                                       :line   63
                                        :column 10}))
 
   (fact "Used function in letfn are not reported"
