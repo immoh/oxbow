@@ -20,7 +20,10 @@
           interns)))
 
 (defn- get-used-vars [analyzed-nses]
-  (set (mapcat (comp vals :symbols-to-vars) analyzed-nses)))
+  (->> analyzed-nses
+       (mapcat (comp vals :resolved-symbols))
+       (filter var?)
+       set))
 
 (defn- api-namespace? [{:keys [api-namespaces]} ns]
   (and api-namespaces (api-namespaces ns)))

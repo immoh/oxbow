@@ -12,9 +12,8 @@
 (defn- resolve-and-store [result-atom sym]
   (when (symbol? sym)
     (when-not (or (local? sym) (ns-name? sym))
-      (let [resolved (resolve sym)]
-        (when (var? resolved)
-          (swap! result-atom assoc-in [:symbols-to-vars sym] resolved))))))
+      (when-let [resolved (resolve sym)]
+        (swap! result-atom assoc-in [:resolved-symbols sym] resolved)))))
 
 (defn- store-bindings-from-env [result-atom]
   (swap! result-atom update-in [:bindings-to-symbols] merge (clojure.set/map-invert (compiler/locals))))
@@ -100,17 +99,17 @@
                      form)))
 
 (defn analyze-form [form]
-  (let [result (atom {:symbols-to-vars {}
+  (let [result (atom {:resolved-symbols {}
                       :bindings-to-symbols {}
                       :used-bindings #{}})]
     (try
       (walk-exprs result form)
       (catch Throwable t
         (throw (ex-info "Failed to analyze form" {:type ::analyze-failure :form form} t))))
-    {:symbols-to-vars (:symbols-to-vars @result)
+    {:resolved-symbols (:resolved-symbols @result)
      :unused-locals   (unused-locals @result)}))
 
 (defn analyze [forms]
   (let [analyzed-forms (map analyze-form forms)]
-    {:symbols-to-vars (apply merge (map :symbols-to-vars analyzed-forms))
+    {:resolved-symbols (apply merge (map :resolved-symbols analyzed-forms))
      :unused-locals   (apply concat (map :unused-locals analyzed-forms))}))

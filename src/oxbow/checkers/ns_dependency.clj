@@ -51,9 +51,10 @@
 (defn- check-ns-dep [ns used-symbols used-nses dep]
   (map (partial format-result ns dep) (or (find-unused-dep dep used-nses) (find-unused-symbols dep used-symbols))))
 
-(defn- check-ns [{:keys [ns symbols-to-vars deps]}]
-  (mapcat (partial check-ns-dep ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars))
-          (filter (comp #{:require :use} :type) deps)))
+(defn- check-ns [{:keys [ns resolved-symbols deps]}]
+  (let [symbols-to-vars (into {} (filter (comp var? val) resolved-symbols))]
+    (mapcat (partial check-ns-dep ns (ns-to-unqualified-symbols symbols-to-vars) (used-nses symbols-to-vars))
+            (filter (comp #{:require :use} :type) deps))))
 
 (defn check
   ([analyzed-nses]
