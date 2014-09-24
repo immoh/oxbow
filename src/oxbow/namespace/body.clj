@@ -71,7 +71,8 @@
   (store-bindings-from-env result)
   (when (symbol? form)
     (store-used-binding result form)
-    (resolve-and-store result form)))
+    (resolve-and-store result form))
+  (resolve-and-store result (-> form meta :tag)))
 
 (defn walk-exprs
   ([result form]

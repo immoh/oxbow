@@ -118,7 +118,12 @@
   (fact "Used Java import with packapage prefix is not reported"
     (check-test-project) =not=> (contains (contains {:type   :unused-import
                                                      :ns     'test-project.core
-                                                     :class   'java.util.Date}))))
+                                                     :class   'java.util.Date})))
+
+  (fact "Type hints are considered as import usage"
+    (check-test-project) =not=> (contains (contains {:type   :unused-import
+                                                     :ns     'test-project.core
+                                                     :class   'java.io.Serializable}))))
 
 (facts "About unused-var checker"
 

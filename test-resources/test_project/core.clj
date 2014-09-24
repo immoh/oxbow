@@ -11,7 +11,7 @@
         [test-project.deps.j :only [configuration j-function]]
         [test-project.deps.k :rename {main k-main}])
   (:import [java.util Date Calendar]
-           java.io.File javax.swing.JPanel))
+           java.io.File javax.swing.JPanel java.io.Serializable))
 
 (defn- square [x]
   (* x x))
@@ -64,8 +64,10 @@
         (g [x] x)]
   (g 1))
 
-(defn current-date []
+(defn ^Serializable current-date []
   (Date.))
 
 (defn list-roots []
   (File/listRoots))
+
+
