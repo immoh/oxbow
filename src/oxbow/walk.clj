@@ -108,4 +108,3 @@
 
       (coll? x')
       (dorun (map (partial walk! f) x')))))
-
