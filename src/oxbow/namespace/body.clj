@@ -1,10 +1,9 @@
 (ns oxbow.namespace.body
   (:require [clojure.set]
-            [riddley.walk :as walk]
-            [riddley.compiler :as compiler]))
+            [oxbow.walk :as walk]))
 
 (defn- local? [sym]
-  (get (compiler/locals) sym))
+  (get (walk/locals) sym))
 
 (defn- ns-name? [sym]
   (re-matches #"([^/\.]+\.)+[^/\.]+" (str sym)))
@@ -16,10 +15,10 @@
         (swap! result-atom assoc-in [:resolved-symbols sym] resolved)))))
 
 (defn- store-bindings-from-env [result-atom]
-  (swap! result-atom update-in [:bindings-to-symbols] merge (clojure.set/map-invert (compiler/locals))))
+  (swap! result-atom update-in [:bindings-to-symbols] merge (clojure.set/map-invert (walk/locals))))
 
 (defn- store-used-binding [result-atom symbol]
-  (swap! result-atom update-in [:used-bindings] conj (get (compiler/locals) symbol)))
+  (swap! result-atom update-in [:used-bindings] conj (get (walk/locals) symbol)))
 
 (defn- unused-locals [{:keys [bindings-to-symbols used-bindings]}]
   (->> (apply dissoc bindings-to-symbols (conj used-bindings :riddley.compiler/analyze-failure))
@@ -74,7 +73,7 @@
     (resolve-and-store result form))
   (resolve-and-store result (-> form meta :tag)))
 
-(defn walk-exprs
+#_(defn walk-exprs
   ([result form]
    (walk-exprs result form false))
   ([result form special-form?]
@@ -99,12 +98,28 @@
                        special-form?)
                      form)))
 
+#_(defn- walk-exprs [result form]
+  (walk/walk! (fn [form]
+                (store-bindings-from-env result)
+                (when (symbol? form)
+                  (store-used-binding result form)
+                  (resolve-and-store result form)
+                  (resolve-and-store (-> form meta :tag))))
+              form))
+
+
 (defn analyze-form [form]
   (let [result (atom {:resolved-symbols {}
                       :bindings-to-symbols {}
                       :used-bindings #{}})]
     (try
-      (walk-exprs result form)
+      (walk/walk! (fn [form]
+                    (store-bindings-from-env result)
+                    (when (symbol? form)
+                      (store-used-binding result form)
+                      (resolve-and-store result form)
+                      (resolve-and-store result (-> form meta :tag))))
+                  form)
       (catch Throwable t
         (throw (ex-info "Failed to analyze form" {:type ::analyze-failure :form form} t))))
     {:resolved-symbols (:resolved-symbols @result)
